@@ -4,16 +4,90 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Resource Table</title>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'EB Garamond', serif;
+            background-image: url('{{ url_for('static', filename='map.png') }}');
+            background-size: cover;
+            background-repeat: no-repeat;
+            color: #3e2723;
+            padding: 0;
+            margin: 0;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            text-align: center;
+            color: #4e342e;
+            font-size: 48px;
+            margin-top: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #6d4c41;
+            font-size: 28px;
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: rgba(255, 255, 255, 0.85);
+        }
+
+        table, th, td {
+            border: 1px solid #795548;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #6d4c41;
+            color: #fff;
+        }
+
+        td {
+            font-size: 18px;
+        }
+
+        a {
+            color: #5d4037;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        a:hover {
+            color: #3e2723;
+        }
+
+        .link-buttons {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .link-buttons a {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #8e6c62;
+            color: #fff;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .link-buttons a:hover {
+            background-color: #6d4c41;
+        }
+
+    </style>
 </head>
 <body>
     <h1>Global Resource Table</h1>
-    <!-- Display the map -->
-    <h2>Map</h2>
-    <img src="{{ url_for('static', filename='map.png') }}" alt="Map" style="width:600px;">
 
-    <br><br>
-
-    <table border="1">
+    <table>
         <thead>
             <tr>
                 <th>House</th>
@@ -26,7 +100,7 @@
         <tbody>
             {% for resource in global_resources %}
             <tr>
-                <td>{{ resource.House }}</td>
+                <td><a href="{{ url_for('view_house_turns', house=resource.House) }}">{{ resource.House }}</a></td>
                 <td>{{ resource.Spl }}</td>
                 <td>{{ resource.AP }}</td>
                 <td>{{ resource.Wealth }}</td>
@@ -36,12 +110,11 @@
         </tbody>
     </table>
 
-    <br>
-    <a href="{{ url_for('submit_turn') }}">Submit a Turn</a>
-    <br>
-    <a href="{{ url_for('view_turns') }}">View Released Turns</a>
-    <br>
-    <a href="{{ url_for('admin') }}">Admin Login</a>
+    <div class="link-buttons">
+        <a href="{{ url_for('submit_turn') }}">Submit a Turn</a>
+        <a href="{{ url_for('view_turns') }}">View Released Turns</a>
+        <a href="{{ url_for('admin') }}">Admin Login</a>
+    </div>
 </body>
 </html>
 

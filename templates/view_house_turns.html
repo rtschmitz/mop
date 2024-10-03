@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ house }}'s Turns</title>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'EB Garamond', serif;
+            background-color: #f4f1e9;
+            color: #3e2723;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            text-align: center;
+            color: #4e342e;
+            font-size: 36px;
+            margin-top: 20px;
+        }
+
+        .turn-container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #8d6e63;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        p, ul {
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        li {
+            padding: 10px 0;
+            border-bottom: 1px solid #d7ccc8;
+        }
+
+        li:last-child {
+            border-bottom: none;
+        }
+
+        .icon {
+            width: 20px;
+            vertical-align: middle;
+            margin-left: 8px;
+        }
+
+        .final-resources {
+            background-color: #fbe9e7;
+            padding: 15px;
+            border: 1px solid #d7ccc8;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 10px 20px;
+            background-color: #8e24aa;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .back-link:hover {
+            background-color: #6a1b9a;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ house }}'s Released Turns</h1>
+
+    {% if turns %}
+        {% for turn in turns %}
+        <div class="turn-container">
+            <h2>{{ house }}'s Turn</h2>
+
+            <!-- Display Starting Resources -->
+            <p><strong>AP:</strong> {{ turn.ap }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon"></p>
+            <p><strong>Wealth:</strong> {{ turn.wealth }} <img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon"></p>
+            <p><strong>Culture:</strong> {{ turn.culture }} <img src="{{ url_for('static', filename='culture.png') }}" alt="Culture" class="icon"></p>
+            <p><strong>Splendor:</strong> {{ turn.splendor }} <img src="{{ url_for('static', filename='splendor.png') }}" alt="Splendor" class="icon"></p>
+
+            <!-- Display Actions -->
+            <h3>Actions</h3>
+            <ul>
+                {% for action in turn.actions.split('\n') %}
+                    {% set action_values = action.split('\t') %}
+                    <li>{{ action_values[0] }}: 
+                        {% if action_values[1] != '0' %}{{ action_values[1] }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon">{% endif %}
+                        {% if action_values[2] != '0' %}{{ action_values[2] }} <img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon">{% endif %}
+                        {% if action_values[3] != '0' %}{{ action_values[3] }} <img src="{{ url_for('static', filename='culture.png') }}" alt="Culture" class="icon">{% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <!-- Display Artist Bids -->
+            <h3>Artist Bids</h3>
+            <ul>
+                {% for bid in turn.artist_bids.split('\n') %}
+                    {% set bid_values = bid.split('\t') %}
+                    <li>{{ bid_values[0] }}: 
+                        {% if bid_values[1] != '0' %}{{ bid_values[1] }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon">{% endif %}
+                        {% if bid_values[2] != '0' %}{{ bid_values[2] }} <img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon">{% endif %}
+                        (Recipient: {{ bid_values[3] }}, Outcome: {{ bid_values[4] }})
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <!-- Display Income -->
+            <h3>Income</h3>
+            <ul>
+                {% for income in turn.income.split('\n') %}
+                    {% set income_values = income.split('\t') %}
+                    <li>{{ income_values[0] }}: 
+                        {% if income_values[1] != '0' %}{{ income_values[1] }} <img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon">{% endif %}
+                        {% if income_values[2] != '0' %}{{ income_values[2] }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon">{% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <!-- Display Final Resource Totals -->
+            <div class="final-resources">
+                <h3>Final Resources</h3>
+                <p><strong>Final AP:</strong> {{ turn.final_ap }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon"></p>
+                <p><strong>Final Wealth:</strong> {{ turn.final_wealth }} <img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon"></p>
+                <p><strong>Final Culture:</strong> {{ turn.final_culture }} <img src="{{ url_for('static', filename='culture.png') }}" alt="Culture" class="icon"></p>
+                <p><strong>Final Splendor:</strong> {{ turn.final_spl }} <img src="{{ url_for('static', filename='splendor.png') }}" alt="Splendor" class="icon"></p>
+            </div>
+        </div>
+        <hr>
+        {% endfor %}
+    {% else %}
+        <p>No turns released for {{ house }} yet.</p>
+    {% endif %}
+
+    <br>
+    <a href="{{ url_for('index') }}" class="back-link">Back to Global Resource Table</a>
+</body>
+</html>
+

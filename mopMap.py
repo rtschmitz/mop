@@ -278,6 +278,14 @@ def edit_turn(turn_id):
 
     return render_template('edit_turn.html', turn=turn)
 
+@app.route('/view_house_turns/<house>')
+def view_house_turns(house):
+    # Query the database for released turns by the selected house
+    turns = Turn.query.filter_by(house=house, status='released').all()
+
+    # Render the house-specific turns using a custom HTML template
+    return render_template('view_house_turns.html', turns=turns, house=house)
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))  # Use PORT from environment, default to 5000
     app.run(host='0.0.0.0', port=port, debug=True)
