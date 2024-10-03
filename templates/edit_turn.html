@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Turn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lora:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Lora', serif;
+            background-color: #f4f1e9;
+            color: #3e2723;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            color: #6a1b9a;
+            text-align: center;
+            font-size: 36px;
+            margin-top: 40px;
+        }
+
+        form {
+            width: 80%;
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            font-weight: 700;
+            margin-top: 10px;
+            display: block;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #6a1b9a;
+            color: #fff;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #4a148c;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .row label, .row input {
+            flex: 1;
+            min-width: 150px;
+            margin-right: 10px;
+        }
+
+        .row input {
+            flex: 2;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 10px 20px;
+            background-color: #8e24aa;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .back-link:hover {
+            background-color: #6a1b9a;
+        }
+    </style>
+</head>
+<body>
+    <h1>Edit {{ turn.house }}'s Turn</h1>
+
+    <form method="POST">
+        <!-- Global Resource Totals -->
+        <h2>Starting Resources</h2>
+        <label for="house">House:</label>
+        <input type="text" id="house" name="house" value="{{ turn.house }}" required>
+
+        <label for="splendor">Splendor:</label>
+        <input type="number" id="splendor" name="splendor" value="{{ turn.splendor }}" required>
+
+        <label for="ap">AP:</label>
+        <input type="number" id="ap" name="ap" value="{{ turn.ap }}" required>
+
+        <label for="wealth">Wealth:</label>
+        <input type="number" id="wealth" name="wealth" value="{{ turn.wealth }}" required>
+
+        <label for="culture">Culture:</label>
+        <input type="number" id="culture" name="culture" value="{{ turn.culture }}" required>
+
+        <!-- Actions Table -->
+        <h2>Actions</h2>
+        <div id="actions">
+            <div class="row">
+                <label>Actions:</label>
+                <textarea name="actions" rows="6" style="width: 100%;">{{ turn.actions }}</textarea>
+            </div>
+        </div>
+
+        <!-- Artist Bids Table -->
+        <h2>Artist Bids</h2>
+        <div id="artist_bids">
+            <div class="row">
+                <label>Artist Bids:</label>
+                <textarea name="artist_bids" rows="6" style="width: 100%;">{{ turn.artist_bids }}</textarea>
+            </div>
+        </div>
+
+        <!-- Income Table -->
+        <h2>Income</h2>
+        <div id="income">
+            <div class="row">
+                <label>Income:</label>
+                <textarea name="income" rows="6" style="width: 100%;">{{ turn.income }}</textarea>
+            </div>
+        </div>
+
+        <!-- Splendor Sources Table -->
+        <h2>Splendor Sources</h2>
+        <div id="splendor_sources">
+            <div class="row">
+                <label>Splendor Sources:</label>
+                <textarea name="splendor_sources" rows="6" style="width: 100%;">{{ turn.splendor_sources }}</textarea>
+            </div>
+        </div>
+
+        <!-- Bonuses Table -->
+        <h2>Bonuses</h2>
+        <label for="bonus_spl">Spl:</label>
+        <input type="number" id="bonus_spl" name="bonus_spl" value="{{ turn.bonus_spl }}">
+
+        <label for="bonus_ap">AP:</label>
+        <input type="number" id="bonus_ap" name="bonus_ap" value="{{ turn.bonus_ap }}">
+
+        <label for="bonus_wealth">Wealth:</label>
+        <input type="number" id="bonus_wealth" name="bonus_wealth" value="{{ turn.bonus_wealth }}">
+
+        <label for="bonus_culture">Culture:</label>
+        <input type="number" id="bonus_culture" name="bonus_culture" value="{{ turn.bonus_culture }}">
+
+        <!-- Submit Button -->
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <br>
+    <a href="{{ url_for('admin_dashboard') }}" class="back-link">Back to Admin Dashboard</a>
+</body>
+</html>
+

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Resource Table</title>
+</head>
+<body>
+    <h1>Global Resource Table</h1>
+    <!-- Display the map -->
+    <h2>Map</h2>
+    <img src="{{ url_for('static', filename='map.png') }}" alt="Map" style="width:600px;">
+
+    <br><br>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>House</th>
+                <th>Splendor</th>
+                <th>AP</th>
+                <th>Wealth</th>
+                <th>Culture</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resource in global_resources %}
+            <tr>
+                <td>{{ resource.House }}</td>
+                <td>{{ resource.Spl }}</td>
+                <td>{{ resource.AP }}</td>
+                <td>{{ resource.Wealth }}</td>
+                <td>{{ resource.Culture }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <br>
+    <a href="{{ url_for('submit_turn') }}">Submit a Turn</a>
+    <br>
+    <a href="{{ url_for('view_turns') }}">View Released Turns</a>
+    <br>
+    <a href="{{ url_for('admin') }}">Admin Login</a>
+</body>
+</html>
+

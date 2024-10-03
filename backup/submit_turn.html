@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit a Turn</title>
+</head>
+<body>
+    <h1>Submit a Turn</h1>
+
+    <form method="POST">
+        <!-- Global Resource Totals -->
+        <h2>Starting Resources</h2>
+        <label for="house">House:</label>
+        <input type="text" id="house" name="house" required><br>
+
+        <label for="splendor">Splendor:</label>
+        <input type="number" id="splendor" name="splendor" required><br>
+
+        <label for="ap">AP:</label>
+        <input type="number" id="ap" name="ap" required><br>
+
+        <label for="wealth">Wealth:</label>
+        <input type="number" id="wealth" name="wealth" required><br>
+
+        <label for="culture">Culture:</label>
+        <input type="number" id="culture" name="culture" required><br>
+
+        <!-- Actions Table -->
+        <h2>Actions</h2>
+        <textarea id="actions" name="actions" rows="10" placeholder="Enter your actions table in this format: Action, AP Cost, Wealth Cost, Culture Cost, Other Cost, Description"></textarea><br>
+
+        <!-- Artist Bids Table -->
+        <h2>Artist Bids</h2>
+        <textarea id="artist_bids" name="artist_bids" rows="10" placeholder="Enter your artist bids in this format: City, Bid Target, CP Value, Bid (AP), Bid (Wealth), Recipient (if won)"></textarea><br>
+
+        <!-- Income Table -->
+        <h2>Income</h2>
+        <textarea id="income" name="income" rows="5" placeholder="Enter your income in this format: Source, Wealth, AP"></textarea><br>
+
+        <!-- Splendor Table -->
+        <h2>Splendor Sources</h2>
+        <textarea id="splendor_sources" name="splendor_sources" rows="5" placeholder="Enter your splendor sources in this format: Source, Dynastic, Civic, Client, Tithe, Notes"></textarea><br>
+
+        <!-- Bonuses Table -->
+        <h2>Bonuses</h2>
+        <label for="bonus_spl">Spl:</label>
+        <input type="number" id="bonus_spl" name="bonus_spl"><br>
+
+        <label for="bonus_ap">AP:</label>
+        <input type="number" id="bonus_ap" name="bonus_ap"><br>
+
+        <label for="bonus_wealth">Wealth:</label>
+        <input type="number" id="bonus_wealth" name="bonus_wealth"><br>
+
+        <label for="bonus_culture">Culture:</label>
+        <input type="number" id="bonus_culture" name="bonus_culture"><br>
+
+        <button type="submit">Submit Turn</button>
+    </form>
+</body>
+</html>
+

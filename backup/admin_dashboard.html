@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+</head>
+<body>
+    <h1>Admin Dashboard</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>House</th>
+                <th>AP</th>
+                <th>Wealth</th>
+                <th>Culture</th>
+                <th>Splendor</th>
+                <th>Actions</th>
+                <th>Lore</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for turn in turns %}
+            <tr>
+                <td>{{ turn.house }}</td>
+                <td>{{ turn.ap }}</td>
+                <td>{{ turn.wealth }}</td>
+                <td>{{ turn.culture }}</td>
+                <td>{{ turn.splendor }}</td>
+                <td>{{ turn.actions }}</td>
+                <td>{{ turn.lore }}</td>
+                <td>{{ turn.status }}</td>
+                <td>
+                    {% if turn.status == 'submitted' %}
+                    <a href="{{ url_for('release_turn', turn_id=turn.id) }}">Release</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ url_for('admin_logout') }}">Logout</a>
+</body>
+</html>
+

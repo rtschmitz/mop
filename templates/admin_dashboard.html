@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lora:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Lora', serif;
+            background-color: #f4f1e9;
+            color: #3e2723;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            color: #6a1b9a;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 36px;
+            margin-top: 40px;
+        }
+
+        h2 {
+            font-size: 28px;
+            color: #4a148c;
+        }
+
+        h3 {
+            font-size: 22px;
+            color: #8e24aa;
+        }
+
+        .turn-container {
+            width: 90%;
+            max-width: 1000px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #d4a373;
+            border-radius: 8px;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        p, ul {
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        li {
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        li:last-child {
+            border-bottom: none;
+        }
+
+        .icon {
+            width: 20px;
+            vertical-align: middle;
+            margin-left: 8px;
+        }
+
+        .final-resources {
+            background-color: #fbe9e7;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 10px 20px;
+            background-color: #8e24aa;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .back-link:hover {
+            background-color: #6a1b9a;
+        }
+
+        /* Victorian embellishment */
+        hr {
+            border: none;
+            border-top: 2px solid #d4a373;
+            margin: 30px 0;
+        }
+
+        .edit-btn {
+            background-color: #43a047;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .edit-btn:hover {
+            background-color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <h1>Admin Dashboard</h1>
+    <div class="turn-container">
+        {% if turns %}
+            {% for turn in turns %}
+            <div>
+                <h2>{{ turn.house }}'s Turn</h2>
+
+                <!-- Starting Resources with Icons -->
+                <p><strong>AP:</strong> {{ turn.ap }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon"></p>
+                <p><strong>Wealth:</strong> {{ turn.wealth }} <img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon"></p>
+                <p><strong>Culture:</strong> {{ turn.culture }} <img src="{{ url_for('static', filename='culture.png') }}" alt="Culture" class="icon"></p>
+                <p><strong>Splendor:</strong> {{ turn.splendor }} <img src="{{ url_for('static', filename='splendor.png') }}" alt="Splendor" class="icon"></p>
+
+                <hr>
+
+                <!-- Actions -->
+                <h3>Actions</h3>
+                <ul>
+                    {% for action in turn.actions.split('\n') %}
+                        {% set action_values = action.strip().split('\t') %}
+                        <li>
+                            {{ action_values[0] }}:
+                            {% if action_values[1] != '0' %}
+                                {{ action_values[1] }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon">
+                            {% endif %}
+                            {% if action_values[2] != '0' %}
+                                {{ action_values[2] }} <img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon">
+                            {% endif %}
+                            {% if action_values[3] != '0' %}
+                                {{ action_values[3] }} <img src="{{ url_for('static', filename='culture.png') }}" alt="Culture" class="icon">
+                            {% endif %}
+                            {% if action_values[4] != '' %}
+                                ({{ action_values[4] }})
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <!-- Artist Bids -->
+                <h3>Artist Bids</h3>
+                <ul>
+                    {% for bid in turn.artist_bids.split('\n') %}
+                        {% set bid_values = bid.strip().split('\t') %}
+                        <li>
+                            {{ bid_values[0] }}:
+                            {% if bid_values[1] != '0' %}
+                                {{ bid_values[1] }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon">
+                            {% endif %}
+                            {% if bid_values[2] != '0' %}
+                                {{ bid_values[2] }} <img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon">
+                            {% endif %}
+                            {% if bid_values[3] != '' %}
+                                (Recipient: {{ bid_values[3] }})
+                            {% endif %}
+                            {% if bid_values[4] != '' %}
+                                ({{ bid_values[4] }})
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <!-- Income -->
+                <h3>Income</h3>
+                <ul>
+                    {% for income in turn.income.split('\n') %}
+                        {% set income_values = income.strip().split('\t') %}
+                        <li>
+                            {{ income_values[0] }}:
+                            {% if income_values[1] != '0' %}
+                                {{ income_values[1] }} <img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon">
+                            {% endif %}
+                            {% if income_values[2] != '0' %}
+                                {{ income_values[2] }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon">
+                            {% endif %}
+                            {% if income_values[3] != '' %}
+                                ({{ income_values[3] }})
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <!-- Splendor Sources -->
+                <h3>Splendor Sources</h3>
+                <ul>
+                    {% for splendor in turn.splendor_sources.split('\n') %}
+                        {% set splendor_values = splendor.strip().split('\t') %}
+                        <li>
+                            {{ splendor_values[0] }}:
+                            {% if splendor_values[1] != '0' %}
+                                {{ splendor_values[1] }} <img src="{{ url_for('static', filename='splendor.png') }}" alt="Splendor" class="icon">
+                            {% endif %}
+                            {% if splendor_values[2] != '0' %}
+                                {{ splendor_values[2] }} <img src="{{ url_for('static', filename='civic.png') }}" alt="Civic" class="icon">
+                            {% endif %}
+                            {% if splendor_values[3] != '0' %}
+                                {{ splendor_values[3] }} <img src="{{ url_for('static', filename='client.png') }}" alt="Client" class="icon">
+                            {% endif %}
+                            {% if splendor_values[4] != '0' %}
+                                {{ splendor_values[4] }} <img src="{{ url_for('static', filename='tithed.png') }}" alt="Tithed" class="icon">
+                            {% endif %}
+                            {% if splendor_values[5] != '' %}
+                                ({{ splendor_values[5] }})
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <!-- Bonuses -->
+                <h3>Bonuses</h3>
+                <p>Spl: {{ turn.bonus_spl }} <img src="{{ url_for('static', filename='splendor.png') }}" alt="Splendor" class="icon"><br>
+                AP: {{ turn.bonus_ap }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon"><br>
+                Wealth: {{ turn.bonus_wealth }} <img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon"><br>
+                Culture: {{ turn.bonus_culture }} <img src="{{ url_for('static', filename='culture.png') }}" alt="Culture" class="icon">
+                </p>
+
+                <!-- Final Resource Totals -->
+                <div class="final-resources">
+                    <h3>Final Resources</h3>
+                    <p>
+                        <strong>Final AP:</strong> {{ turn.final_ap }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon"><br>
+                        <strong>Final Wealth:</strong> {{ turn.final_wealth }} <img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon"><br>
+                        <strong>Final Culture:</strong> {{ turn.final_culture }} <img src="{{ url_for('static', filename='culture.png') }}" alt="Culture" class="icon"><br>
+                        <strong>Final Splendor:</strong> {{ turn.final_spl }} <img src="{{ url_for('static', filename='splendor.png') }}" alt="Splendor" class="icon">
+                    </p>
+                </div>
+
+                <!-- Edit Turn Button -->
+                <form method="GET" action="{{ url_for('edit_turn', turn_id=turn.id) }}">
+                    <button type="submit" class="edit-btn">Edit Turn</button>
+                </form>
+            </div>
+            <hr>
+            {% endfor %}
+        {% else %}
+            <p>No turns submitted yet.</p>
+        {% endif %}
+    </div>
+
+    <br>
+    <a href="{{ url_for('index') }}" class="back-link">Back to Global Resource Table</a>
+</body>
+</html>
+

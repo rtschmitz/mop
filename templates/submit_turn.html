@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit a Turn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Lora', serif;
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1, h2 {
+            font-family: 'Merriweather', serif;
+            color: #6a1b9a;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        form {
+            width: 80%;
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            font-weight: 700;
+            margin-top: 10px;
+            display: block;
+        }
+
+        input[type="text"], input[type="number"], input[type="url"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #6a1b9a;
+            color: #fff;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #4a148c;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .row label, .row input {
+            flex: 1;
+            min-width: 150px;
+            margin-right: 10px;
+        }
+
+        .row input {
+            flex: 2;
+        }
+
+        .add-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            background-color: #43a047;
+        }
+
+        .add-btn:hover {
+            background-color: #2e7d32;
+        }
+
+        /* Button at the bottom */
+        .submit-btn {
+            display: block;
+            width: 100%;
+            background-color: #d32f2f;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            background-color: #b71c1c;
+        }
+
+        /* Add visual separator */
+        hr {
+            border: none;
+            border-top: 1px solid #e0e0e0;
+            margin: 30px 0;
+        }
+    </style>
+    <script>
+        function addRow(section) {
+            const container = document.getElementById(section);
+            const newRow = document.createElement("div");
+            newRow.classList.add("row");
+
+            if (section === 'actions') {
+                newRow.innerHTML = `
+                    <label>Action:</label>
+                    <input type="text" name="actions_action[]" required>
+                    <label>AP Cost:</label>
+                    <input type="number" name="actions_ap_cost[]" required>
+                    <label>Wealth Cost:</label>
+                    <input type="number" name="actions_wealth_cost[]" required>
+                    <label>Culture Cost:</label>
+                    <input type="number" name="actions_culture_cost[]" required>
+                    <label>Notes:</label>
+                    <input type="text" name="actions_notes[]">
+                `;
+            } else if (section === 'artist_bids') {
+                newRow.innerHTML = `
+                    <label>Bid Target:</label>
+                    <input type="text" name="artist_bids_target[]" required>
+                    <label>AP Bid:</label>
+                    <input type="number" name="artist_bids_ap_bid[]" required>
+                    <label>Wealth Bid:</label>
+                    <input type="number" name="artist_bids_wealth_bid[]" required>
+                    <label>Recipient:</label>
+                    <input type="text" name="artist_bids_recipient[]">
+                    <label>Outcome:</label>
+                    <input type="text" name="artist_bids_outcome[]">
+                    <label>Notes:</label>
+                    <input type="text" name="artist_bids_notes[]">
+                `;
+            } else if (section === 'income') {
+                newRow.innerHTML = `
+                    <label>Source:</label>
+                    <input type="text" name="income_source[]" required>
+                    <label>Wealth:</label>
+                    <input type="number" name="income_wealth[]" required>
+                    <label>AP:</label>
+                    <input type="number" name="income_ap[]" required>
+                    <label>Notes:</label>
+                    <input type="text" name="income_notes[]">
+                `;
+            } else if (section === 'splendor_sources') {
+                newRow.innerHTML = `
+                    <label>Source:</label>
+                    <input type="text" name="splendor_sources_source[]" required>
+                    <label>Dynastic:</label>
+                    <input type="number" name="splendor_sources_dynastic[]" required>
+                    <label>Civic:</label>
+                    <input type="number" name="splendor_sources_civic[]" required>
+                    <label>Client:</label>
+                    <input type="number" name="splendor_sources_client[]" required>
+                    <label>Tithed:</label>
+                    <input type="number" name="splendor_sources_tithed[]" required>
+                    <label>Notes:</label>
+                    <input type="text" name="splendor_sources_notes[]">
+                `;
+            }
+
+            container.appendChild(newRow);
+        }
+    </script>
+</head>
+<body>
+    <h1>Submit a Turn</h1>
+
+    <form method="POST">
+        <!-- Global Resource Totals -->
+        <h2>Starting Resources</h2>
+        <label for="house">House:</label>
+        <input type="text" id="house" name="house" required>
+
+        <label for="splendor">Splendor:</label>
+        <input type="number" id="splendor" name="splendor" required>
+
+        <label for="ap">AP:</label>
+        <input type="number" id="ap" name="ap" required>
+
+        <label for="wealth">Wealth:</label>
+        <input type="number" id="wealth" name="wealth" required>
+
+        <label for="culture">Culture:</label>
+        <input type="number" id="culture" name="culture" required>
+
+        <!-- Actions Table -->
+        <h2>Actions</h2>
+        <div id="actions">
+            <div class="row">
+                <label>Action:</label>
+                <input type="text" name="actions_action[]" required>
+                <label>AP Cost:</label>
+                <input type="number" name="actions_ap_cost[]" required>
+                <label>Wealth Cost:</label>
+                <input type="number" name="actions_wealth_cost[]" required>
+                <label>Culture Cost:</label>
+                <input type="number" name="actions_culture_cost[]" required>
+                <label>Notes:</label>
+                <input type="text" name="actions_notes[]">
+            </div>
+        </div>
+        <button type="button" class="add-btn" onclick="addRow('actions')">Add Another Action</button>
+
+        <!-- Artist Bids Table -->
+        <h2>Artist Bids</h2>
+        <div id="artist_bids">
+            <div class="row">
+                <label>Bid Target:</label>
+                <input type="text" name="artist_bids_target[]" required>
+                <label>AP Bid:</label>
+                <input type="number" name="artist_bids_ap_bid[]" required>
+                <label>Wealth Bid:</label>
+                <input type="number" name="artist_bids_wealth_bid[]" required>
+                <label>Recipient:</label>
+                <input type="text" name="artist_bids_recipient[]">
+                <label>Outcome:</label>
+                <input type="text" name="artist_bids_outcome[]">
+                <label>Notes:</label>
+                <input type="text" name="artist_bids_notes[]">
+            </div>
+        </div>
+        <button type="button" class="add-btn" onclick="addRow('artist_bids')">Add Another Artist Bid</button>
+
+        <!-- Income Table -->
+        <h2>Income</h2>
+        <div id="income">
+            <div class="row">
+                <label>Source:</label>
+                <input type="text" name="income_source[]" required>
+                <label>Wealth:</label>
+                <input type="number" name="income_wealth[]" required>
+                <label>AP:</label>
+                <input type="number" name="income_ap[]" required>
+                <label>Notes:</label>
+                <input type="text" name="income_notes[]">
+            </div>
+        </div>
+        <button type="button" class="add-btn" onclick="addRow('income')">Add Another Income Source</button>
+
+        <!-- Splendor Sources Table -->
+        <h2>Splendor Sources</h2>
+        <div id="splendor_sources">
+            <div class="row">
+                <label>Source:</label>
+                <input type="text" name="splendor_sources_source[]" required>
+                <label>Dynastic:</label>
+                <input type="number" name="splendor_sources_dynastic[]" required>
+                <label>Civic:</label>
+                <input type="number" name="splendor_sources_civic[]" required>
+                <label>Client:</label>
+                <input type="number" name="splendor_sources_client[]" required>
+                <label>Tithed:</label>
+                <input type="number" name="splendor_sources_tithed[]" required>
+                <label>Notes:</label>
+                <input type="text" name="splendor_sources_notes[]">
+            </div>
+        </div>
+        <button type="button" class="add-btn" onclick="addRow('splendor_sources')">Add Another Splendor Source</button>
+
+        <!-- Bonuses Table -->
+        <h2>Bonuses</h2>
+        <label for="bonus_spl">Spl:</label>
+        <input type="number" id="bonus_spl" name="bonus_spl">
+
+        <label for="bonus_ap">AP:</label>
+        <input type="number" id="bonus_ap" name="bonus_ap">
+
+        <label for="bonus_wealth">Wealth:</label>
+        <input type="number" id="bonus_wealth" name="bonus_wealth">
+
+        <label for="bonus_culture">Culture:</label>
+        <input type="number" id="bonus_culture" name="bonus_culture">
+
+        <!-- Submit Button -->
+        <button type="submit" class="submit-btn">Submit Turn</button>
+    </form>
+</body>
+</html>
+

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Released Turns</title>
+</head>
+<body>
+    <h1>Released Turns</h1>
+    {% if turns %}
+        <ul>
+            {% for turn in turns %}
+            <li>
+                <h2>{{ turn.house }}'s Turn</h2>
+                <p><strong>AP:</strong> {{ turn.ap }}</p>
+                <p><strong>Wealth:</strong> {{ turn.wealth }}</p>
+                <p><strong>Culture:</strong> {{ turn.culture }}</p>
+                <p><strong>Splendor:</strong> {{ turn.splendor }}</p>
+                <p><strong>Actions:</strong> {{ turn.actions }}</p>
+                <p><strong>Lore:</strong> {{ turn.lore }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No turns released yet.</p>
+    {% endif %}
+    <br>
+    <a href="{{ url_for('index') }}">Back to Global Resource Table</a>
+</body>
+</html>
+
