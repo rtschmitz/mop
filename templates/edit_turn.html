@@ -38,7 +38,7 @@
             display: block;
         }
 
-        input[type="text"], input[type="number"] {
+        input[type="text"], input[type="number"], textarea {
             width: 100%;
             padding: 10px;
             margin-top: 5px;
@@ -121,7 +121,7 @@
         <div id="actions">
             <div class="row">
                 <label>Actions:</label>
-                <textarea name="actions" rows="6" style="width: 100%;">{{ turn.actions }}</textarea>
+                <textarea name="actions" rows="6">{{ turn.actions }}</textarea>
             </div>
         </div>
 
@@ -130,7 +130,7 @@
         <div id="artist_bids">
             <div class="row">
                 <label>Artist Bids:</label>
-                <textarea name="artist_bids" rows="6" style="width: 100%;">{{ turn.artist_bids }}</textarea>
+                <textarea name="artist_bids" rows="6">{{ turn.artist_bids }}</textarea>
             </div>
         </div>
 
@@ -139,7 +139,7 @@
         <div id="income">
             <div class="row">
                 <label>Income:</label>
-                <textarea name="income" rows="6" style="width: 100%;">{{ turn.income }}</textarea>
+                <textarea name="income" rows="6">{{ turn.income }}</textarea>
             </div>
         </div>
 
@@ -148,9 +148,13 @@
         <div id="splendor_sources">
             <div class="row">
                 <label>Splendor Sources:</label>
-                <textarea name="splendor_sources" rows="6" style="width: 100%;">{{ turn.splendor_sources }}</textarea>
+                <textarea name="splendor_sources" rows="6">{{ turn.splendor_sources }}</textarea>
             </div>
         </div>
+
+        <!-- Lore Section -->
+        <h2>Lore</h2>
+        <textarea name="lore" rows="6">{{ turn.lore }}</textarea>
 
         <!-- Bonuses Table -->
         <h2>Bonuses</h2>
