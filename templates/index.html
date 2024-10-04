@@ -4,88 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Resource Table</title>
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'EB Garamond', serif;
-            background-image: url('{{ url_for('static', filename='map.png') }}');
-            background-size: cover;
-            background-repeat: no-repeat;
-            color: #3e2723;
-            padding: 0;
+            font-family: 'Lora', serif;
+            background-color: #f5f5f5;
+            color: #333;
             margin: 0;
+            padding: 0;
         }
 
         h1 {
-            font-family: 'Playfair Display', serif;
             text-align: center;
-            color: #4e342e;
-            font-size: 48px;
-            margin-top: 20px;
-        }
-
-        h2 {
-            text-align: center;
-            color: #6d4c41;
-            font-size: 28px;
+            margin-top: 30px;
+            font-family: 'Merriweather', serif;
         }
 
         table {
             width: 80%;
-            margin: 20px auto;
+            margin: 0 auto;
             border-collapse: collapse;
-            background-color: rgba(255, 255, 255, 0.85);
+            font-size: 18px;
         }
 
         table, th, td {
-            border: 1px solid #795548;
-            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px 15px;
             text-align: center;
         }
 
         th {
-            background-color: #6d4c41;
-            color: #fff;
+            background-color: #6a1b9a;
+            color: white;
         }
 
-        td {
-            font-size: 18px;
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
         }
 
         a {
-            color: #5d4037;
             text-decoration: none;
-            font-weight: 700;
+            color: #6a1b9a;
+            font-weight: bold;
         }
 
-        a:hover {
-            color: #3e2723;
+        img {
+            max-width: 100%;
+            height: auto;
         }
 
-        .link-buttons {
+        .map-container {
             text-align: center;
-            margin-top: 30px;
+            margin: 30px 0;
         }
-
-        .link-buttons a {
-            display: inline-block;
-            margin: 10px;
-            padding: 10px 20px;
-            background-color: #8e6c62;
-            color: #fff;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: background-color 0.3s;
-        }
-
-        .link-buttons a:hover {
-            background-color: #6d4c41;
-        }
-
     </style>
 </head>
 <body>
-    <h1>Global Resource Table</h1>
+    <h1>Global Resource Table (Turn {{ global_turn }})</h1>
+
+
+    <!-- Display the map -->
+    <div class="map-container">
+        <img src="{{ url_for('static', filename='map.png') }}" alt="Map">
+    </div>
 
     <table>
         <thead>
@@ -100,19 +88,20 @@
         <tbody>
             {% for resource in global_resources %}
             <tr>
-                <td><a href="{{ url_for('view_house_turns', house=resource.House) }}">{{ resource.House }}</a></td>
-                <td>{{ resource.Spl }}</td>
-                <td>{{ resource.AP }}</td>
-                <td>{{ resource.Wealth }}</td>
-                <td>{{ resource.Culture }}</td>
+                <td><a href="{{ url_for('view_house_turns', house=resource.house) }}">{{ resource.house }}</a></td>
+                <td>{{ resource.splendor }}</td>
+                <td>{{ resource.ap }}</td>
+                <td>{{ resource.wealth }}</td>
+                <td>{{ resource.culture }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <div class="link-buttons">
-        <a href="{{ url_for('submit_turn') }}">Submit a Turn</a>
-        <a href="{{ url_for('view_turns') }}">View Released Turns</a>
+    <br>
+    <div style="text-align:center;">
+        <a href="{{ url_for('submit_turn') }}">Submit a Turn</a><br>
+        <a href="{{ url_for('view_turns') }}">View Released Turns</a><br>
         <a href="{{ url_for('admin') }}">Admin Login</a>
     </div>
 </body>

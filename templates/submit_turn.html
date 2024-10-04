@@ -3,31 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Submit a Turn</title>
-    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <h1>Submit a Turn (Turn {{ global_turn }})</h1>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Lora', serif;
-            background-color: #f5f5f5;
-            color: #333;
+            font-family: 'EB Garamond', serif;
+            background-color: #f4f1e9;
+            color: #3e2723;
             margin: 0;
-            padding: 0;
+            padding: 20px;
         }
 
         h1, h2 {
-            font-family: 'Merriweather', serif;
-            color: #6a1b9a;
+            font-family: 'Playfair Display', serif;
+            color: #4e342e;
         }
 
         h1 {
             text-align: center;
-            margin-top: 30px;
+            margin-top: 20px;
         }
 
         form {
             width: 80%;
             max-width: 900px;
-            margin: 0 auto;
+            margin: 20px auto;
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
@@ -40,7 +40,7 @@
             display: block;
         }
 
-        input[type="text"], input[type="number"], input[type="url"] {
+        select, input[type="text"], input[type="number"], textarea {
             width: 100%;
             padding: 10px;
             margin-top: 5px;
@@ -48,6 +48,10 @@
             border: 1px solid #ccc;
             border-radius: 4px;
             font-size: 16px;
+        }
+
+        textarea {
+            height: 150px;
         }
 
         button {
@@ -92,7 +96,6 @@
             background-color: #2e7d32;
         }
 
-        /* Button at the bottom */
         .submit-btn {
             display: block;
             width: 100%;
@@ -104,7 +107,6 @@
             background-color: #b71c1c;
         }
 
-        /* Add visual separator */
         hr {
             border: none;
             border-top: 1px solid #e0e0e0;
@@ -178,13 +180,17 @@
     </script>
 </head>
 <body>
-    <h1>Submit a Turn</h1>
 
     <form method="POST">
         <!-- Global Resource Totals -->
         <h2>Starting Resources</h2>
         <label for="house">House:</label>
-        <input type="text" id="house" name="house" required>
+        <select id="house" name="house" required>
+            {% for house in houses %}
+                <option value="{{ house.house }}">{{ house.house }}</option>
+            {% endfor %}
+        </select>
+
 
         <label for="splendor">Splendor:</label>
         <input type="number" id="splendor" name="splendor" required>
@@ -285,6 +291,10 @@
 
         <label for="bonus_culture">Culture:</label>
         <input type="number" id="bonus_culture" name="bonus_culture">
+
+        <!-- Lore Section -->
+        <h2>Lore</h2>
+        <textarea id="lore" name="lore" placeholder="Add your lore or comments here..."></textarea>
 
         <!-- Submit Button -->
         <button type="submit" class="submit-btn">Submit Turn</button>

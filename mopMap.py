@@ -17,31 +17,55 @@ ADMIN_PASSWORD = 'pass'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-# Define global resources
-global_resources = [
-    {"House": "Laramack", "Spl": 320.5, "AP": 22, "Wealth": 0, "Culture": 11},
-    {"House": "Lo", "Spl": 241.75, "AP": 24, "Wealth": 10.75, "Culture": 0},
-    {"House": "Glamides", "Spl": 189.75, "AP": 25, "Wealth": 11, "Culture": 2},
-    {"House": "Cenica", "Spl": 88, "AP": 21, "Wealth": 9.5, "Culture": 0},
-    {"House": "Chimmeria", "Spl": 101.75, "AP": 24, "Wealth": 3.5, "Culture": 0},
-    {"House": "Lowell", "Spl": 68.5, "AP": 25, "Wealth": 9.25, "Culture": 11},
-    {"House": "Masseney", "Spl": 76, "AP": 25, "Wealth": 58, "Culture": 1},
-    {"House": "Soresi", "Spl": 75.25, "AP": 24, "Wealth": 10, "Culture": 2},
-    {"House": "Mirtilli", "Spl": 65.75, "AP": 19, "Wealth": 13, "Culture": 1},
-    {"House": "Zinkowski", "Spl": 77.5, "AP": 22.75, "Wealth": 0, "Culture": 11},
-    {"House": "Swietstead", "Spl": 99.25, "AP": 24, "Wealth": 12, "Culture": 7},
-    {"House": "Raimesi", "Spl": 41.25, "AP": 26, "Wealth": 4, "Culture": 2},
-    {"House": "Borophaginae", "Spl": 57, "AP": 24, "Wealth": 10.75, "Culture": 2},
-    {"House": "Isleif", "Spl": 44, "AP": 22, "Wealth": 66, "Culture": 11},
-    {"House": "Cadres of Charme", "Spl": 31, "AP": 20.5, "Wealth": 0, "Culture": 12},
-    {"House": "Kruul", "Spl": 35.75, "AP": 22.25, "Wealth": 8, "Culture": 11},
-    {"House": "Doquz", "Spl": 10, "AP": 24, "Wealth": 27, "Culture": 0},
-    {"House": "Vopox", "Spl": 31, "AP": 19, "Wealth": 25, "Culture": 51},
-]
+class GlobalResource(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    house = db.Column(db.String(80), nullable=False, unique=True)
+    splendor = db.Column(db.Float, nullable=False)
+    ap = db.Column(db.Float, nullable=False)
+    wealth = db.Column(db.Float, nullable=False)
+    culture = db.Column(db.Float, nullable=False)
+
+class GlobalTurn(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    turn_number = db.Column(db.Integer, nullable=False, default=18)  # Initialize global turn to 18
+
+def populate_global_resources():
+    if GlobalResource.query.count() == 0:
+        initial_resources = [
+            {"House": "Laramack", "Spl": 320.5, "AP": 22, "Wealth": 0, "Culture": 11},
+            {"House": "Lo", "Spl": 241.75, "AP": 24, "Wealth": 10.75, "Culture": 0},
+            {"House": "Glamides", "Spl": 189.75, "AP": 25, "Wealth": 11, "Culture": 2},
+            {"House": "Cenica", "Spl": 88, "AP": 21, "Wealth": 9.5, "Culture": 0},
+            {"House": "Chimmeria", "Spl": 101.75, "AP": 24, "Wealth": 3.5, "Culture": 0},
+            {"House": "Lowell", "Spl": 68.5, "AP": 25, "Wealth": 9.25, "Culture": 11},
+            {"House": "Masseney", "Spl": 76, "AP": 25, "Wealth": 58, "Culture": 1},
+            {"House": "Soresi", "Spl": 75.25, "AP": 24, "Wealth": 10, "Culture": 2},
+            {"House": "Mirtilli", "Spl": 65.75, "AP": 19, "Wealth": 13, "Culture": 1},
+            {"House": "Zinkowski", "Spl": 77.5, "AP": 22.75, "Wealth": 0, "Culture": 11},
+            {"House": "Swietstead", "Spl": 99.25, "AP": 24, "Wealth": 12, "Culture": 7},
+            {"House": "Raimesi", "Spl": 41.25, "AP": 26, "Wealth": 4, "Culture": 2},
+            {"House": "Borophaginae", "Spl": 57, "AP": 24, "Wealth": 10.75, "Culture": 2},
+            {"House": "Isleif", "Spl": 44, "AP": 22, "Wealth": 66, "Culture": 11},
+            {"House": "Cadres of Charme", "Spl": 31, "AP": 20.5, "Wealth": 0, "Culture": 12},
+            {"House": "Kruul", "Spl": 35.75, "AP": 22.25, "Wealth": 8, "Culture": 11},
+            {"House": "Doquz", "Spl": 10, "AP": 24, "Wealth": 27, "Culture": 0},
+            {"House": "Vopox", "Spl": 31, "AP": 19, "Wealth": 25, "Culture": 51}
+        ]
+        for resource in initial_resources:
+            new_resource = GlobalResource(
+                house=resource['House'],
+                splendor=resource['Spl'],
+                ap=resource['AP'],
+                wealth=resource['Wealth'],
+                culture=resource['Culture']
+            )
+            db.session.add(new_resource)
+        db.session.commit()
 
 # Define Turn model
 class Turn(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    turn_number = db.Column(db.Integer, nullable=False)
     house = db.Column(db.String(80), nullable=False)
     splendor = db.Column(db.Float, nullable=False)
     ap = db.Column(db.Float, nullable=False)
@@ -60,6 +84,7 @@ class Turn(db.Model):
     final_wealth = db.Column(db.Float)
     final_culture = db.Column(db.Float)
     status = db.Column(db.String(20), nullable=False, default='submitted')  # 'submitted' or 'released'
+    lore = db.Column(db.Text, nullable=True)  # Add this line for lore
 
 # Manually create the database tables when the app starts
 with app.app_context():
@@ -68,17 +93,27 @@ with app.app_context():
 # Route to view global resources (public for all users)
 @app.route('/')
 def index():
-    return render_template('index.html', global_resources=global_resources)
+    global_turn = GlobalTurn.query.first()
+    if global_turn is None:
+        global_turn_number = 18  # Default if no global turn is found
+    else:
+        global_turn_number = global_turn.turn_number
+    global_resources = GlobalResource.query.all()
+    return render_template('index.html', global_resources=global_resources, global_turn=global_turn_number)
 
 # Route for submitting a turn (public for all users)
 @app.route('/submit_turn', methods=['GET', 'POST'])
 def submit_turn():
+    # Get the current global turn number
+    global_turn = GlobalTurn.query.first().turn_number
+
     if request.method == 'POST':
         house = request.form['house']
         splendor = float(request.form['splendor'])
         ap = float(request.form['ap'])
         wealth = float(request.form['wealth'])
         culture = float(request.form['culture'])
+        lore = request.form.get('lore')  # Retrieve lore from form
 
         # Collect and process the multiple rows of data for actions
         total_ap_spent = 0
@@ -151,7 +186,7 @@ def submit_turn():
         final_culture = culture - total_culture_spent + bonus_culture
         final_splendor = splendor + total_dynastic_spl + bonus_spl
 
-        # Create new Turn object
+        # Create new Turn object with turn_number
         new_turn = Turn(
             house=house,
             splendor=splendor,
@@ -169,7 +204,9 @@ def submit_turn():
             final_spl=final_splendor,
             final_ap=final_ap,
             final_wealth=final_wealth,
-            final_culture=final_culture
+            final_culture=final_culture,
+            lore=lore,
+            turn_number=global_turn  # Associate with current global turn number
         )
 
         # Save the data into the database
@@ -178,7 +215,10 @@ def submit_turn():
 
         return redirect(url_for('view_turns'))
 
-    return render_template('submit_turn.html')
+    # Query all houses from GlobalResource to populate the dropdown
+    houses = GlobalResource.query.all()
+    return render_template('submit_turn.html', houses=houses, global_turn=global_turn)
+
 
 # Route for users to view released turns only (public)
 @app.route('/view_turns')
@@ -198,25 +238,45 @@ def admin():
             return "Incorrect password", 403
     return render_template('admin_login.html')
 
-# Admin dashboard (view all turns and release them)
 @app.route('/admin/dashboard')
 def admin_dashboard():
     if not session.get('admin'):
         return redirect(url_for('admin'))
 
     turns = Turn.query.all()
-    return render_template('admin_dashboard.html', turns=turns)
+    global_turn = GlobalTurn.query.first().turn_number  # Query the global turn number
+    return render_template('admin_dashboard.html', turns=turns, global_turn=global_turn)
+
+# Route for viewing the Artist Auction (public for all users)
+@app.route('/artist_auction')
+def artist_auction():
+    # Query all artists from the database to display them in the auction
+    artists = Artist.query.all()
+    return render_template('artist_auction.html', artists=artists)
+
 
 # Route to release a turn (only for admin)
-@app.route('/admin/release_turn/<int:turn_id>')
+@app.route('/admin/release_turn/<int:turn_id>', methods=['POST'])
 def release_turn(turn_id):
     if not session.get('admin'):
         return redirect(url_for('admin'))
 
     turn = Turn.query.get(turn_id)
-    if turn:
+    if turn and turn.status == 'submitted':
         turn.status = 'released'
-        db.session.commit()
+        
+        # Lock the turn_number to the current global turn
+        global_turn = GlobalTurn.query.first().turn_number
+        turn.turn_number = global_turn  # Lock turn_number at the moment of release
+
+        # Update the GlobalResource for this house
+        resource = GlobalResource.query.filter_by(house=turn.house).first()
+        if resource:
+            resource.splendor = turn.final_spl
+            resource.ap = turn.final_ap
+            resource.wealth = turn.final_wealth
+            resource.culture = turn.final_culture
+            db.session.commit()
 
     return redirect(url_for('admin_dashboard'))
 
@@ -225,6 +285,61 @@ def release_turn(turn_id):
 def admin_logout():
     session.pop('admin', None)
     return redirect(url_for('index'))
+
+# Route for managing artists (admin only)
+@app.route('/admin/manage_artists', methods=['GET', 'POST'])
+def manage_artists():
+    if not session.get('admin'):
+        return redirect(url_for('admin'))
+
+    if request.method == 'POST':
+        city = request.form['city']
+        name = request.form['name']
+        cp = request.form['cp']
+        description = request.form['description']
+        special_ability = request.form['special_ability']
+
+        # Add new artist to the database
+        new_artist = Artist(
+            city=city,
+            name=name,
+            cp=cp,
+            description=description,
+            special_ability=special_ability
+        )
+        db.session.add(new_artist)
+        db.session.commit()
+        return redirect(url_for('manage_artists'))
+
+    # Query existing artists to edit
+    artists = Artist.query.all()
+    return render_template('manage_artists.html', artists=artists)
+
+# Route for editing an artist (admin only)
+@app.route('/admin/edit_artist/<int:artist_id>', methods=['POST'])
+def edit_artist(artist_id):
+    if not session.get('admin'):
+        return redirect(url_for('admin'))
+
+    artist = Artist.query.get(artist_id)
+    if artist:
+        artist.city = request.form['city']
+        artist.name = request.form['name']
+        artist.cp = request.form['cp']
+        artist.description = request.form['description']
+        artist.special_ability = request.form['special_ability']
+        db.session.commit()
+    
+    return redirect(url_for('manage_artists'))
+
+class Artist(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
+    city = db.Column(db.String(100))
+    cp = db.Column(db.Integer)  # Culture Points
+    description = db.Column(db.Text)
+    special_ability = db.Column(db.Text)
+
 
 # Route to edit a specific turn (only for admin)
 @app.route('/admin/edit_turn/<int:turn_id>', methods=['GET', 'POST'])
@@ -249,6 +364,8 @@ def edit_turn(turn_id):
         turn.bonus_ap = float(request.form['bonus_ap'])
         turn.bonus_wealth = float(request.form['bonus_wealth'])
         turn.bonus_culture = float(request.form['bonus_culture'])
+        turn.lore = request.form['lore']  # Add lore to be updated
+
 
         # Recalculate final resources
         # Parse actions and bids to calculate total costs
@@ -286,7 +403,87 @@ def view_house_turns(house):
     # Render the house-specific turns using a custom HTML template
     return render_template('view_house_turns.html', turns=turns, house=house)
 
+# Route to hide (unrelease) a turn (only for admin)
+@app.route('/admin/hide_turn/<int:turn_id>', methods=['POST'])
+def hide_turn(turn_id):
+    if not session.get('admin'):
+        return redirect(url_for('admin'))
+
+    turn = Turn.query.get(turn_id)
+    if turn and turn.status == 'released':
+        turn.status = 'submitted'
+        db.session.commit()
+
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/set_turn', methods=['GET', 'POST'])
+def set_turn():
+    if request.method == 'POST':
+        new_turn = int(request.form['turn_number'])
+        global_turn = GlobalTurn.query.first()
+        global_turn.turn_number = new_turn
+        db.session.commit()
+        return redirect(url_for('admin_dashboard'))
+
+    global_turn = GlobalTurn.query.first().turn_number
+    return render_template('set_turn.html', global_turn=global_turn)
+
+@app.route('/admin/edit_turn_number/<int:turn_id>', methods=['POST'])
+def edit_turn_number(turn_id):
+    if not session.get('admin'):
+        return redirect(url_for('admin'))
+
+    new_turn_number = request.form['turn_number']
+    turn = Turn.query.get(turn_id)
+    if turn:
+        turn.turn_number = new_turn_number
+        db.session.commit()
+
+    return redirect(url_for('admin_dashboard'))
+
+# Route to update the global turn number
+@app.route('/update_global_turn', methods=['POST'])
+def update_global_turn():
+    global_turn = request.form['global_turn']
+
+    # Update the global turn number in the database
+    current_turn = GlobalTurn.query.first()
+    if current_turn:
+        current_turn.turn_number = global_turn
+    else:
+        new_turn = GlobalTurn(turn_number=global_turn)
+        db.session.add(new_turn)
+
+    db.session.commit()
+
+    return redirect(url_for('admin_dashboard'))
+
+
+@app.before_request
+def initialize_global_turn():
+    # Check if global turn is already initialized
+    global_turn = GlobalTurn.query.first()
+    if global_turn is None:
+        new_global_turn = GlobalTurn(turn_number=18)
+        db.session.add(new_global_turn)
+        db.session.commit()
+
+# Route to delete a turn (only for admin)
+@app.route('/admin/delete_turn/<int:turn_id>', methods=['POST'])
+def delete_turn(turn_id):
+    if not session.get('admin'):
+        return redirect(url_for('admin'))
+
+    turn = Turn.query.get(turn_id)
+    if turn:
+        db.session.delete(turn)
+        db.session.commit()
+
+    return redirect(url_for('admin_dashboard'))
+
 if __name__ == '__main__':
+    with app.app_context():
+        # Call the function to populate global_resources if empty
+        populate_global_resources()
     port = int(os.environ.get('PORT', 5000))  # Use PORT from environment, default to 5000
     app.run(host='0.0.0.0', port=port, debug=True)
-

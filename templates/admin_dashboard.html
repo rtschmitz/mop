@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Admin Dashboard (Turn {{ global_turn }})</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lora:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -79,6 +79,17 @@
             margin-top: 20px;
         }
 
+        .status {
+            font-size: 18px;
+            font-weight: bold;
+            color: #d32f2f;
+            margin-bottom: 15px;
+        }
+
+        .released {
+            color: #43a047;
+        }
+
         .back-link {
             display: inline-block;
             margin-top: 30px;
@@ -93,14 +104,13 @@
             background-color: #6a1b9a;
         }
 
-        /* Victorian embellishment */
         hr {
             border: none;
             border-top: 2px solid #d4a373;
             margin: 30px 0;
         }
 
-        .edit-btn {
+        .edit-btn, .release-btn, .hide-btn, .delete-btn {
             background-color: #43a047;
             color: #fff;
             padding: 10px 15px;
@@ -110,18 +120,64 @@
             margin-top: 10px;
         }
 
-        .edit-btn:hover {
+        .edit-btn:hover, .release-btn:hover, .hide-btn:hover, .delete-btn:hover {
             background-color: #2e7d32;
         }
+
+        .release-btn {
+            background-color: #d32f2f;
+        }
+
+        .release-btn:hover {
+            background-color: #c62828;
+        }
+
+        .hide-btn {
+            background-color: #f57f17;
+        }
+
+        .hide-btn:hover {
+            background-color: #e65100;
+        }
+
+        .delete-btn {
+            background-color: #d32f2f;
+        }
+
+        .delete-btn:hover {
+            background-color: #b71c1c;
+        }
+
     </style>
+    <script>
+        // Confirmation prompt before deleting a turn
+        function confirmDelete() {
+            return confirm("Are you sure you want to delete this turn?");
+        }
+    </script>
 </head>
 <body>
-    <h1>Admin Dashboard</h1>
+    <h1>Admin Dashboard (Turn {{ global_turn }})</h1>
+
+    <!-- Form to update the global turn number -->
+    <div class="global-turn-form">
+        <form method="POST" action="{{ url_for('update_global_turn') }}">
+            <label for="global_turn">Set Global Turn Number:</label>
+            <input type="number" id="global_turn" name="global_turn" value="{{ global_turn }}" required>
+            <button type="submit">Update Global Turn</button>
+        </form>
+    </div>
+
     <div class="turn-container">
         {% if turns %}
             {% for turn in turns %}
             <div>
-                <h2>{{ turn.house }}'s Turn</h2>
+                <h2>{{ turn.house }}'s Turn {{ turn.turn_number }}</h2>
+
+                <!-- Release Status -->
+                <p class="status {% if turn.status == 'released' %}released{% endif %}">
+                    Status: {{ 'Released' if turn.status == 'released' else 'Submitted' }}
+                </p>
 
                 <!-- Starting Resources with Icons -->
                 <p><strong>AP:</strong> {{ turn.ap }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon"></p>
@@ -242,10 +298,31 @@
                     </p>
                 </div>
 
+                <!-- Lore Section -->
+                <h3>Lore</h3>
+                <p>{{ turn.lore }}</p>
+
                 <!-- Edit Turn Button -->
                 <form method="GET" action="{{ url_for('edit_turn', turn_id=turn.id) }}">
                     <button type="submit" class="edit-btn">Edit Turn</button>
                 </form>
+
+                <!-- Release or Hide Turn Button -->
+                {% if turn.status == 'released' %}
+                <form method="POST" action="{{ url_for('hide_turn', turn_id=turn.id) }}">
+                    <button type="submit" class="hide-btn">Hide Turn</button>
+                </form>
+                {% else %}
+                <form method="POST" action="{{ url_for('release_turn', turn_id=turn.id) }}">
+                    <button type="submit" class="release-btn">Release Turn</button>
+                </form>
+                {% endif %}
+
+                <!-- Delete Turn Button -->
+                <form method="POST" action="{{ url_for('delete_turn', turn_id=turn.id) }}" onsubmit="return confirmDelete();">
+                    <button type="submit" class="delete-btn">Delete Turn</button>
+                </form>
+
             </div>
             <hr>
             {% endfor %}
