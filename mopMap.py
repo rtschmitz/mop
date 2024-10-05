@@ -15,7 +15,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///turns.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Admin password (simple, static password for demonstration)
-ADMIN_PASSWORD = 'pass'
+ADMIN_PASSWORD = 'MasterOfRevels'
 
 # Initialize the database
 db = SQLAlchemy(app)
