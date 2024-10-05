@@ -518,9 +518,22 @@ def edit_turn(turn_id):
 def view_house_turns(house):
     # Query the database for released turns by the selected house
     turns = Turn.query.filter_by(house=house, status='released').all()
+    
+    # Initialize a dictionary to store artists by turn number
+    artists_by_turn = defaultdict(dict)
+
+    # Get the list of turn numbers associated with the house's turns
+    turn_numbers = [turn.turn_number for turn in turns]
+
+    # Fetch all artists for the relevant turn numbers
+    artists = Artist.query.filter(Artist.turn_number.in_(turn_numbers)).all()
+
+    # Group artists by turn number and their name
+    for artist in artists:
+        artists_by_turn[artist.turn_number][artist.name] = artist.cp
 
     # Render the house-specific turns using a custom HTML template
-    return render_template('view_house_turns.html', turns=turns, house=house)
+    return render_template('view_house_turns.html', turns=turns, house=house, artists_by_turn=artists_by_turn)
 
 # Route to hide (unrelease) a turn (only for admin)
 @app.route('/admin/hide_turn/<int:turn_id>', methods=['POST'])

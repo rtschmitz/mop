@@ -118,9 +118,24 @@
             <ul>
                 {% for bid in turn.artist_bids.split('\n') %}
                     {% set bid_values = bid.split('\t') %}
-                    <li>{{ bid_values[0] }}: 
-                        {% if bid_values[1] != '0' %}{{ bid_values[1] }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon">{% endif %}
-                        {% if bid_values[2] != '0' %}{{ bid_values[2] }} <img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon">{% endif %}
+                    {% set artist_name = bid_values[0].strip() %}
+                    <li>
+                        <!-- Check if the artist exists in artists_by_turn for the current turn number -->
+                        {% if artist_name in artists_by_turn[turn.turn_number] %}
+                            <!-- Display the artist's CP value for the specific turn -->
+                            {{ artists_by_turn[turn.turn_number][artist_name] }} 
+                            <img src="{{ url_for('static', filename='culture.png') }}" alt="Culture" class="icon"> 
+                            {{ artist_name }}:
+                        {% else %}
+                            {{ artist_name }}:
+                        {% endif %}
+                        <!-- Display AP, Wealth, Recipient, and Outcome if applicable -->
+                        {% if bid_values[1] != '0' %}
+                            {{ bid_values[1] }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon">
+                        {% endif %}
+                        {% if bid_values[2] != '0' %}
+                            {{ bid_values[2] }} <img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon">
+                        {% endif %}
                         (Recipient: {{ bid_values[3] }}, Outcome: {{ bid_values[4] }})
                     </li>
                 {% endfor %}
