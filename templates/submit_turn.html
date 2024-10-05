@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit a Turn</title>
     <h1>Submit a Turn (Turn {{ global_turn }})</h1>
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -51,7 +52,9 @@
         }
 
         textarea {
-            height: 150px;
+            min-height: 150px;
+            resize: none; /* Prevent manual resizing */
+            overflow: hidden; /* Prevent scroll bars */
         }
 
         button {
@@ -76,14 +79,13 @@
             margin-bottom: 20px;
         }
 
-        .row label, .row input {
-            flex: 1;
-            min-width: 150px;
+        .row > div {
+            flex: 1 1 45%;
             margin-right: 10px;
         }
 
-        .row input {
-            flex: 2;
+        .row > div:last-child {
+            margin-right: 0;
         }
 
         .add-btn {
@@ -114,6 +116,18 @@
         }
     </style>
     <script>
+        // Dynamic resizing for textarea inputs
+        document.addEventListener('input', function (event) {
+            if (event.target.tagName.toLowerCase() === 'textarea') {
+                autoResize(event.target);
+            }
+        });
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
         function addRow(section) {
             const container = document.getElementById(section);
             const newRow = document.createElement("div");
@@ -121,57 +135,58 @@
 
             if (section === 'actions') {
                 newRow.innerHTML = `
-                    <label>Action:</label>
-                    <input type="text" name="actions_action[]" required>
-                    <label>AP Cost:</label>
-                    <input type="number" name="actions_ap_cost[]" required>
-                    <label>Wealth Cost:</label>
-                    <input type="number" name="actions_wealth_cost[]" required>
-                    <label>Culture Cost:</label>
-                    <input type="number" name="actions_culture_cost[]" required>
-                    <label>Notes:</label>
-                    <input type="text" name="actions_notes[]">
+                    <div><label>Action:</label><input type="text" name="actions_action[]" required></div>
+                    <div><label>AP Cost:</label><input type="number" name="actions_ap_cost[]" required></div>
+                    <div><label>Wealth Cost:</label><input type="number" name="actions_wealth_cost[]" required></div>
+                    <div><label>Culture Cost:</label><input type="number" name="actions_culture_cost[]" required></div>
+                    <div><label>Notes:</label><textarea name="actions_notes[]"></textarea></div>
                 `;
             } else if (section === 'artist_bids') {
                 newRow.innerHTML = `
-                    <label>Bid Target:</label>
-                    <input type="text" name="artist_bids_target[]" required>
-                    <label>AP Bid:</label>
-                    <input type="number" name="artist_bids_ap_bid[]" required>
-                    <label>Wealth Bid:</label>
-                    <input type="number" name="artist_bids_wealth_bid[]" required>
-                    <label>Recipient:</label>
-                    <input type="text" name="artist_bids_recipient[]">
-                    <label>Outcome:</label>
-                    <input type="text" name="artist_bids_outcome[]">
-                    <label>Notes:</label>
-                    <input type="text" name="artist_bids_notes[]">
+                    <div><label>Bid Target:</label>
+                    <select name="artist_bids_target[]" required>
+                        <option value="">Select Artist</option>
+                        {% for city, artists in artists_by_city.items() %}
+                            <optgroup label="{{ city }}">
+                                {% for artist in artists %}
+                                    <option value="{{ artist.name }}">
+                                        {{ artist.name }} ({{ artist.cp }} CP)
+                                        {% if artist.special_ability %}
+                                            - {{ artist.special_ability }}
+                                        {% endif %}
+                                    </option>
+                                {% endfor %}
+                            </optgroup>
+                        {% endfor %}
+                    </select></div>
+                    <div><label>AP Bid:</label><input type="number" name="artist_bids_ap_bid[]" required></div>
+                    <div><label>Wealth Bid:</label><input type="number" name="artist_bids_wealth_bid[]" required></div>
+<div><label>Recipient:</label>
+    <select name="artist_bids_recipient[]" required>
+        <option value="">Select House</option>
+        {% for house in houses %}
+            <option value="{{ house.house }}">{{ house.house }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+                    <div><label>Notes:</label><textarea name="artist_bids_notes[]"></textarea></div>
                 `;
             } else if (section === 'income') {
                 newRow.innerHTML = `
-                    <label>Source:</label>
-                    <input type="text" name="income_source[]" required>
-                    <label>Wealth:</label>
-                    <input type="number" name="income_wealth[]" required>
-                    <label>AP:</label>
-                    <input type="number" name="income_ap[]" required>
-                    <label>Notes:</label>
-                    <input type="text" name="income_notes[]">
+                    <div><label>Source:</label><input type="text" name="income_source[]" required></div>
+                    <div><label>Wealth:</label><input type="number" name="income_wealth[]" required></div>
+                    <div><label>AP:</label><input type="number" name="income_ap[]" required></div>
+                    <div><label>Notes:</label><textarea name="income_notes[]"></textarea></div>
                 `;
             } else if (section === 'splendor_sources') {
                 newRow.innerHTML = `
-                    <label>Source:</label>
-                    <input type="text" name="splendor_sources_source[]" required>
-                    <label>Dynastic:</label>
-                    <input type="number" name="splendor_sources_dynastic[]" required>
-                    <label>Civic:</label>
-                    <input type="number" name="splendor_sources_civic[]" required>
-                    <label>Client:</label>
-                    <input type="number" name="splendor_sources_client[]" required>
-                    <label>Tithed:</label>
-                    <input type="number" name="splendor_sources_tithed[]" required>
-                    <label>Notes:</label>
-                    <input type="text" name="splendor_sources_notes[]">
+                    <div><label>Source:</label><input type="text" name="splendor_sources_source[]" required></div>
+                    <div><label>Dynastic:</label><input type="number" name="splendor_sources_dynastic[]" required></div>
+                    <div><label>Civic:</label><input type="number" name="splendor_sources_civic[]" required></div>
+                    <div><label>Client:</label><input type="number" name="splendor_sources_client[]" required></div>
+                    <div><label>Tithed:</label><input type="number" name="splendor_sources_tithed[]" required></div>
+                    <div><label>Notes:</label><textarea name="splendor_sources_notes[]"></textarea></div>
                 `;
             }
 
@@ -180,7 +195,6 @@
     </script>
 </head>
 <body>
-
     <form method="POST">
         <!-- Global Resource Totals -->
         <h2>Starting Resources</h2>
@@ -191,106 +205,41 @@
             {% endfor %}
         </select>
 
-
-        <label for="splendor">Splendor:</label>
-        <input type="number" id="splendor" name="splendor" required>
-
-        <label for="ap">AP:</label>
-        <input type="number" id="ap" name="ap" required>
-
-        <label for="wealth">Wealth:</label>
-        <input type="number" id="wealth" name="wealth" required>
-
-        <label for="culture">Culture:</label>
-        <input type="number" id="culture" name="culture" required>
+        <div class="row">
+            <div><label for="splendor">Splendor:</label><input type="number" id="splendor" name="splendor" required></div>
+            <div><label for="ap">AP:</label><input type="number" id="ap" name="ap" required></div>
+            <div><label for="wealth">Wealth:</label><input type="number" id="wealth" name="wealth" required></div>
+            <div><label for="culture">Culture:</label><input type="number" id="culture" name="culture" required></div>
+        </div>
 
         <!-- Actions Table -->
         <h2>Actions</h2>
-        <div id="actions">
-            <div class="row">
-                <label>Action:</label>
-                <input type="text" name="actions_action[]" required>
-                <label>AP Cost:</label>
-                <input type="number" name="actions_ap_cost[]" required>
-                <label>Wealth Cost:</label>
-                <input type="number" name="actions_wealth_cost[]" required>
-                <label>Culture Cost:</label>
-                <input type="number" name="actions_culture_cost[]" required>
-                <label>Notes:</label>
-                <input type="text" name="actions_notes[]">
-            </div>
-        </div>
+        <div id="actions"></div>
         <button type="button" class="add-btn" onclick="addRow('actions')">Add Another Action</button>
 
         <!-- Artist Bids Table -->
         <h2>Artist Bids</h2>
-        <div id="artist_bids">
-            <div class="row">
-                <label>Bid Target:</label>
-                <input type="text" name="artist_bids_target[]" required>
-                <label>AP Bid:</label>
-                <input type="number" name="artist_bids_ap_bid[]" required>
-                <label>Wealth Bid:</label>
-                <input type="number" name="artist_bids_wealth_bid[]" required>
-                <label>Recipient:</label>
-                <input type="text" name="artist_bids_recipient[]">
-                <label>Outcome:</label>
-                <input type="text" name="artist_bids_outcome[]">
-                <label>Notes:</label>
-                <input type="text" name="artist_bids_notes[]">
-            </div>
-        </div>
+        <div id="artist_bids"></div>
         <button type="button" class="add-btn" onclick="addRow('artist_bids')">Add Another Artist Bid</button>
 
         <!-- Income Table -->
         <h2>Income</h2>
-        <div id="income">
-            <div class="row">
-                <label>Source:</label>
-                <input type="text" name="income_source[]" required>
-                <label>Wealth:</label>
-                <input type="number" name="income_wealth[]" required>
-                <label>AP:</label>
-                <input type="number" name="income_ap[]" required>
-                <label>Notes:</label>
-                <input type="text" name="income_notes[]">
-            </div>
-        </div>
+        <div id="income"></div>
         <button type="button" class="add-btn" onclick="addRow('income')">Add Another Income Source</button>
 
         <!-- Splendor Sources Table -->
         <h2>Splendor Sources</h2>
-        <div id="splendor_sources">
-            <div class="row">
-                <label>Source:</label>
-                <input type="text" name="splendor_sources_source[]" required>
-                <label>Dynastic:</label>
-                <input type="number" name="splendor_sources_dynastic[]" required>
-                <label>Civic:</label>
-                <input type="number" name="splendor_sources_civic[]" required>
-                <label>Client:</label>
-                <input type="number" name="splendor_sources_client[]" required>
-                <label>Tithed:</label>
-                <input type="number" name="splendor_sources_tithed[]" required>
-                <label>Notes:</label>
-                <input type="text" name="splendor_sources_notes[]">
-            </div>
-        </div>
+        <div id="splendor_sources"></div>
         <button type="button" class="add-btn" onclick="addRow('splendor_sources')">Add Another Splendor Source</button>
 
         <!-- Bonuses Table -->
         <h2>Bonuses</h2>
-        <label for="bonus_spl">Spl:</label>
-        <input type="number" id="bonus_spl" name="bonus_spl">
-
-        <label for="bonus_ap">AP:</label>
-        <input type="number" id="bonus_ap" name="bonus_ap">
-
-        <label for="bonus_wealth">Wealth:</label>
-        <input type="number" id="bonus_wealth" name="bonus_wealth">
-
-        <label for="bonus_culture">Culture:</label>
-        <input type="number" id="bonus_culture" name="bonus_culture">
+        <div class="row">
+            <div><label for="bonus_spl">Spl:</label><input type="number" id="bonus_spl" name="bonus_spl"></div>
+            <div><label for="bonus_ap">AP:</label><input type="number" id="bonus_ap" name="bonus_ap"></div>
+            <div><label for="bonus_wealth">Wealth:</label><input type="number" id="bonus_wealth" name="bonus_wealth"></div>
+            <div><label for="bonus_culture">Culture:</label><input type="number" id="bonus_culture" name="bonus_culture"></div>
+        </div>
 
         <!-- Lore Section -->
         <h2>Lore</h2>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Auction Summary</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f1e9;
+            color: #3e2723;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4e342e;
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            text-align: center;
+            background-color: #fff;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ccc;
+        }
+
+        th {
+            background-color: #6a1b9a;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            color: #6a1b9a;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Artist Auction Results</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Artist</th>
+                <th>Winning House</th>
+                <th>Recipient</th>
+                <th>Outcome</th>
+                <th>Artist Status (d4 Outcome)</th> <!-- Updated column title -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in auction_results %}
+                <tr>
+                    <td>{{ result.artist }}</td>
+                    <td>{{ result.winner }}</td>
+                    <td>{{ result.recipient }}</td>
+                    <td>{{ result.outcome }}</td>
+                    <td>{{ result.status }} (Rolled: {{ result.d4_roll }})</td> <!-- Display d4 roll result -->
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('manage_artists') }}">Back to Manage Artists</a>
+</body>
+</html>
+

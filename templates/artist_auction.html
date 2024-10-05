@@ -4,106 +4,94 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Artist Auction</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lora:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Lora', serif;
             background-color: #f4f1e9;
             color: #3e2723;
             margin: 0;
-            padding: 20px;
+            padding: 0;
         }
 
         h1 {
-            font-family: 'Playfair Display', serif;
             text-align: center;
-            color: #4e342e;
+            margin-top: 30px;
+            font-family: 'Playfair Display', serif;
             font-size: 36px;
+            color: #6a1b9a;
         }
 
         .artist-container {
-            margin: 20px auto;
+            width: 90%;
             max-width: 1000px;
-        }
-
-        .city-section {
-            margin-bottom: 30px;
-        }
-
-        .artist-list {
+            margin: 20px auto;
             background-color: #fff;
             padding: 20px;
+            border: 1px solid #d4a373;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .artist {
+        .city-name {
+            font-size: 28px;
+            color: #4a148c;
+            margin-bottom: 15px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        li {
             padding: 10px 0;
-            border-bottom: 1px solid #d7ccc8;
+            border-bottom: 1px solid #e0e0e0;
         }
 
-        .artist:last-child {
+        li:last-child {
             border-bottom: none;
         }
 
-        .artist h3 {
-            font-family: 'Playfair Display', serif;
-            color: #6a1b9a;
-            font-size: 22px;
+        .artist-name {
+            font-weight: bold;
+            color: #8e24aa;
         }
 
-        .artist p {
+        .artist-details {
             font-size: 18px;
+            line-height: 1.6;
         }
 
-        .bid-form {
-            margin-top: 15px;
-        }
-
-        .bid-form input {
-            width: 50px;
-            padding: 5px;
-            margin-right: 10px;
-        }
-
-        .bid-form button {
-            padding: 8px 15px;
-            background-color: #6a1b9a;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .bid-form button:hover {
-            background-color: #4a148c;
-        }
     </style>
 </head>
 <body>
-    <h1>Artist Auction</h1>
+
+    <h1>Available Artists for Turn {{ global_turn }}</h1>
+
     <div class="artist-container">
         {% for city, artists_in_city in artists_by_city.items() %}
-        <div class="city-section">
-            <h2>{{ city }}</h2>
-            <div class="artist-list">
+        <div>
+            <h2 class="city-name">{{ city }}</h2>
+            <ul>
                 {% for artist in artists_in_city %}
-                <div class="artist">
-                    <h3>{{ artist.name }} ({{ artist.cp }} CP)</h3>
-                    <p>{{ artist.description }}</p>
-                    <form class="bid-form" method="POST" action="{{ url_for('submit_bid', artist_id=artist.id) }}">
-                        <label for="ap_bid">AP Bid:</label>
-                        <input type="number" name="ap_bid" required>
-                        <label for="wealth_bid">Wealth Bid:</label>
-                        <input type="number" name="wealth_bid" required>
-                        <button type="submit">Submit Bid</button>
-                    </form>
-                </div>
+                <li>
+                    <span class="artist-name">{{ artist.name }} ({{ artist.cp }} CP)</span>
+                    <p class="artist-details">{{ artist.description }}</p>
+                    {% if artist.special_ability %}
+                    <p class="artist-details"><strong>Special Ability:</strong> {{ artist.special_ability }}</p>
+                    {% endif %}
+                </li>
                 {% endfor %}
-            </div>
+            </ul>
         </div>
+        <hr>
         {% endfor %}
     </div>
+
+    <br>
+    <a href="{{ url_for('index') }}" class="back-link">Back to Homepage</a>
+
 </body>
 </html>
 

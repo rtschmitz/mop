@@ -159,6 +159,8 @@
 <body>
     <h1>Admin Dashboard (Turn {{ global_turn }})</h1>
 
+    <a href="{{ url_for('manage_artists') }}" class="nav-link">Manage Artist Auction</a>
+
     <!-- Form to update the global turn number -->
     <div class="global-turn-form">
         <form method="POST" action="{{ url_for('update_global_turn') }}">
@@ -180,10 +182,10 @@
                 </p>
 
                 <!-- Starting Resources with Icons -->
-                <p><strong>AP:</strong> {{ turn.ap }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon"></p>
-                <p><strong>Wealth:</strong> {{ turn.wealth }} <img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon"></p>
-                <p><strong>Culture:</strong> {{ turn.culture }} <img src="{{ url_for('static', filename='culture.png') }}" alt="Culture" class="icon"></p>
-                <p><strong>Splendor:</strong> {{ turn.splendor }} <img src="{{ url_for('static', filename='splendor.png') }}" alt="Splendor" class="icon"></p>
+                <p><strong>AP:</strong> {{ turn.ap }}<img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon"></p>
+                <p><strong>Wealth:</strong> {{ turn.wealth }}<img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon"></p>
+                <p><strong>Culture:</strong> {{ turn.culture }}<img src="{{ url_for('static', filename='culture.png') }}" alt="Culture" class="icon"></p>
+                <p><strong>Splendor:</strong> {{ turn.splendor }}<img src="{{ url_for('static', filename='splendor.png') }}" alt="Splendor" class="icon"></p>
 
                 <hr>
 
@@ -195,13 +197,13 @@
                         <li>
                             {{ action_values[0] }}:
                             {% if action_values[1] != '0' %}
-                                {{ action_values[1] }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon">
+                                {{ action_values[1] }}<img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon">
                             {% endif %}
                             {% if action_values[2] != '0' %}
-                                {{ action_values[2] }} <img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon">
+                                {{ action_values[2] }}<img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon">
                             {% endif %}
                             {% if action_values[3] != '0' %}
-                                {{ action_values[3] }} <img src="{{ url_for('static', filename='culture.png') }}" alt="Culture" class="icon">
+                                {{ action_values[3] }}<img src="{{ url_for('static', filename='culture.png') }}" alt="Culture" class="icon">
                             {% endif %}
                             {% if action_values[4] != '' %}
                                 ({{ action_values[4] }})
@@ -210,28 +212,39 @@
                     {% endfor %}
                 </ul>
 
-                <!-- Artist Bids -->
-                <h3>Artist Bids</h3>
-                <ul>
-                    {% for bid in turn.artist_bids.split('\n') %}
-                        {% set bid_values = bid.strip().split('\t') %}
-                        <li>
-                            {{ bid_values[0] }}:
-                            {% if bid_values[1] != '0' %}
-                                {{ bid_values[1] }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon">
-                            {% endif %}
-                            {% if bid_values[2] != '0' %}
-                                {{ bid_values[2] }} <img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon">
-                            {% endif %}
-                            {% if bid_values[3] != '' %}
-                                (Recipient: {{ bid_values[3] }})
-                            {% endif %}
-                            {% if bid_values[4] != '' %}
-                                ({{ bid_values[4] }})
-                            {% endif %}
-                        </li>
-                    {% endfor %}
-                </ul>
+<!-- Artist Bids -->
+<h3>Artist Bids</h3>
+<ul>
+    {% for bid in turn.artist_bids.split('\n') %}
+        {% set bid_values = bid.strip().split('\t') %}
+        {% set artist_name = bid_values[0].strip() %}
+        <li>
+            <!-- Check if the artist exists in artists_by_turn for the current turn number -->
+            {% if artist_name in artists_by_turn[turn.turn_number] %}
+                <!-- Display the artist's CP value for the specific turn -->
+                {{ artists_by_turn[turn.turn_number][artist_name] }} 
+                <img src="{{ url_for('static', filename='culture.png') }}" alt="Culture" class="icon"> 
+                {{ artist_name }}:
+            {% else %}
+                {{ artist_name }}:
+            {% endif %}
+            <!-- Display AP, Wealth, Recipient, and Outcome if applicable -->
+            {% if bid_values[1] != '0' %}
+                {{ bid_values[1] }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon">
+            {% endif %}
+            {% if bid_values[2] != '0' %}
+                {{ bid_values[2] }} <img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon">
+            {% endif %}
+            {% if bid_values[3] != '' %}
+                (Recipient: {{ bid_values[3] }})
+            {% endif %}
+            {% if bid_values[4] != '' %}
+                ({{ bid_values[4] }})
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+
 
                 <!-- Income -->
                 <h3>Income</h3>
@@ -241,10 +254,10 @@
                         <li>
                             {{ income_values[0] }}:
                             {% if income_values[1] != '0' %}
-                                {{ income_values[1] }} <img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon">
+                                {{ income_values[1] }}<img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon">
                             {% endif %}
                             {% if income_values[2] != '0' %}
-                                {{ income_values[2] }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon">
+                                {{ income_values[2] }}<img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon">
                             {% endif %}
                             {% if income_values[3] != '' %}
                                 ({{ income_values[3] }})
@@ -261,16 +274,16 @@
                         <li>
                             {{ splendor_values[0] }}:
                             {% if splendor_values[1] != '0' %}
-                                {{ splendor_values[1] }} <img src="{{ url_for('static', filename='splendor.png') }}" alt="Splendor" class="icon">
+                                {{ splendor_values[1] }}<img src="{{ url_for('static', filename='splendor.png') }}" alt="Splendor" class="icon">
                             {% endif %}
                             {% if splendor_values[2] != '0' %}
-                                {{ splendor_values[2] }} <img src="{{ url_for('static', filename='civic.png') }}" alt="Civic" class="icon">
+                                {{ splendor_values[2] }}<img src="{{ url_for('static', filename='civic.png') }}" alt="Civic" class="icon">
                             {% endif %}
                             {% if splendor_values[3] != '0' %}
-                                {{ splendor_values[3] }} <img src="{{ url_for('static', filename='client.png') }}" alt="Client" class="icon">
+                                {{ splendor_values[3] }}<img src="{{ url_for('static', filename='client.png') }}" alt="Client" class="icon">
                             {% endif %}
                             {% if splendor_values[4] != '0' %}
-                                {{ splendor_values[4] }} <img src="{{ url_for('static', filename='tithed.png') }}" alt="Tithed" class="icon">
+                                {{ splendor_values[4] }}<img src="{{ url_for('static', filename='tithed.png') }}" alt="Tithed" class="icon">
                             {% endif %}
                             {% if splendor_values[5] != '' %}
                                 ({{ splendor_values[5] }})
@@ -281,20 +294,20 @@
 
                 <!-- Bonuses -->
                 <h3>Bonuses</h3>
-                <p>Spl: {{ turn.bonus_spl }} <img src="{{ url_for('static', filename='splendor.png') }}" alt="Splendor" class="icon"><br>
-                AP: {{ turn.bonus_ap }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon"><br>
-                Wealth: {{ turn.bonus_wealth }} <img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon"><br>
-                Culture: {{ turn.bonus_culture }} <img src="{{ url_for('static', filename='culture.png') }}" alt="Culture" class="icon">
+                <p>Spl: {{ turn.bonus_spl }}<img src="{{ url_for('static', filename='splendor.png') }}" alt="Splendor" class="icon"><br>
+                AP: {{ turn.bonus_ap }}<img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon"><br>
+                Wealth: {{ turn.bonus_wealth }}<img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon"><br>
+                Culture: {{ turn.bonus_culture }}<img src="{{ url_for('static', filename='culture.png') }}" alt="Culture" class="icon">
                 </p>
 
                 <!-- Final Resource Totals -->
                 <div class="final-resources">
                     <h3>Final Resources</h3>
                     <p>
-                        <strong>Final AP:</strong> {{ turn.final_ap }} <img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon"><br>
-                        <strong>Final Wealth:</strong> {{ turn.final_wealth }} <img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon"><br>
-                        <strong>Final Culture:</strong> {{ turn.final_culture }} <img src="{{ url_for('static', filename='culture.png') }}" alt="Culture" class="icon"><br>
-                        <strong>Final Splendor:</strong> {{ turn.final_spl }} <img src="{{ url_for('static', filename='splendor.png') }}" alt="Splendor" class="icon">
+                        <strong>Final AP:</strong> {{ turn.final_ap }}<img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon"><br>
+                        <strong>Final Wealth:</strong> {{ turn.final_wealth }}<img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon"><br>
+                        <strong>Final Culture:</strong> {{ turn.final_culture }}<img src="{{ url_for('static', filename='culture.png') }}" alt="Culture" class="icon"><br>
+                        <strong>Final Splendor:</strong> {{ turn.final_spl }}<img src="{{ url_for('static', filename='splendor.png') }}" alt="Splendor" class="icon">
                     </p>
                 </div>
 
@@ -335,4 +348,3 @@
     <a href="{{ url_for('index') }}" class="back-link">Back to Global Resource Table</a>
 </body>
 </html>
-

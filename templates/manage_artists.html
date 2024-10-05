@@ -4,116 +4,198 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Artists</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lora:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Lora', serif;
             background-color: #f4f1e9;
             color: #3e2723;
             margin: 0;
-            padding: 20px;
+            padding: 0;
         }
 
-        h1 {
-            font-family: 'Playfair Display', serif;
-            color: #6a1b9a;
+        h1, h2, h3 {
             text-align: center;
+            color: #6a1b9a;
         }
 
-        form {
-            max-width: 900px;
+        .artist-container {
+            width: 90%;
+            max-width: 1000px;
             margin: 20px auto;
             background-color: #fff;
             padding: 20px;
+            border: 1px solid #d4a373;
             border-radius: 8px;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .city-title {
+            font-size: 22px;
+            color: #8e24aa;
+        }
+
+        .artist-list {
+            margin-top: 10px;
+            padding-left: 0;
+            list-style-type: none;
+        }
+
+        .artist-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .artist-item:last-child {
+            border-bottom: none;
+        }
+
+        .edit-btn, .save-btn {
+            background-color: #43a047;
+            color: #fff;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .edit-btn:hover, .save-btn:hover {
+            background-color: #2e7d32;
+        }
+
+        /* Form styles */
+        form {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        label {
+        label, input, textarea {
             display: block;
-            margin-top: 10px;
-            font-weight: 700;
+            margin-bottom: 10px;
+            width: 100%;
         }
 
-        input[type="text"], input[type="number"], textarea {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            margin-bottom: 20px;
+        input[type="text"], textarea {
+            padding: 8px;
+            font-size: 16px;
             border: 1px solid #ccc;
             border-radius: 4px;
         }
 
+        input[type="number"] {
+            padding: 8px;
+            font-size: 16px;
+            width: 60px;
+        }
+
         button {
-            padding: 12px 20px;
             background-color: #6a1b9a;
             color: #fff;
+            padding: 10px 20px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
 
         button:hover {
             background-color: #4a148c;
-        }
-
-        .artist-list {
-            margin-top: 40px;
-        }
-
-        .artist-item {
-            padding: 10px;
-            background-color: #fbe9e7;
-            margin-bottom: 10px;
-            border-radius: 4px;
-        }
-
-        .artist-item form {
-            display: inline;
         }
     </style>
 </head>
 <body>
     <h1>Manage Artists</h1>
 
-    <form method="POST">
-        <label for="city">City:</label>
-        <input type="text" id="city" name="city" required>
 
+    <form method="POST" action="{{ url_for('run_artist_auction') }}">
+        <button type="submit" class="auction-btn">Run Artist Auction</button>
+    </form>
+
+
+    <!-- Display artists grouped by city -->
+    <div class="artist-container">
+        {% for city, artists_in_city in artists_by_city.items() %}
+        <div>
+            <h2 class="city-title">{{ city }}</h2>
+            <ul class="artist-list">
+                {% for artist in artists_in_city %}
+                <li class="artist-item">
+                    <form method="POST" action="{{ url_for('edit_artist', artist_id=artist.id) }}">
+                        <strong>Name: <span id="name-{{ artist.id }}">{{ artist.name }}</span></strong><br>
+                        <input type="text" name="name" id="input-name-{{ artist.id }}" value="{{ artist.name }}" style="display:none;"><br>
+
+                        <strong>CP: <span id="cp-{{ artist.id }}">{{ artist.cp }}</span></strong><br>
+                        <input type="number" name="cp" id="input-cp-{{ artist.id }}" value="{{ artist.cp }}" style="display:none;"><br>
+
+                        <strong>Description:</strong> <span id="description-{{ artist.id }}">{{ artist.description }}</span><br>
+                        <textarea name="description" id="input-description-{{ artist.id }}" style="display:none;">{{ artist.description }}</textarea><br>
+
+                        <strong>Special Ability:</strong> <span id="ability-{{ artist.id }}">{{ artist.special_ability }}</span><br>
+                        <textarea name="special_ability" id="input-ability-{{ artist.id }}" style="display:none;">{{ artist.special_ability }}</textarea><br>
+
+                        <!-- Buttons to edit or save artist -->
+                        <button type="button" class="edit-btn" onclick="editArtist({{ artist.id }})">Edit</button>
+                        <button type="submit" class="save-btn" id="save-btn-{{ artist.id }}" style="display:none;">Save Changes</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Form to add a new artist -->
+    <h2>Add New Artist</h2>
+    <form method="POST" action="{{ url_for('manage_artists') }}">
         <label for="name">Artist Name:</label>
         <input type="text" id="name" name="name" required>
+
+        <label for="city">City:</label>
+        <input type="text" id="city" name="city" required>
 
         <label for="cp">Culture Points (CP):</label>
         <input type="number" id="cp" name="cp" required>
 
         <label for="description">Description:</label>
-        <textarea id="description" name="description" rows="4"></textarea>
+        <textarea id="description" name="description" rows="4" required></textarea>
 
-        <label for="special_ability">Special Ability:</label>
-        <textarea id="special_ability" name="special_ability" rows="4"></textarea>
+        <label for="special_ability">Special Ability (optional):</label>
+        <textarea id="special_ability" name="special_ability" rows="2"></textarea>
 
-        <button type="submit">Add New Artist</button>
+        <button type="submit">Add Artist</button>
     </form>
 
-    <div class="artist-list">
-        <h2>Existing Artists</h2>
-        {% for artist in artists %}
-        <div class="artist-item">
-            <strong>{{ artist.name }} ({{ artist.cp }} CP)</strong> - {{ artist.city }}<br>
-            <p>{{ artist.description }}</p>
-            <p>{{ artist.special_ability }}</p>
+    <br>
+    <a href="{{ url_for('admin_dashboard') }}">Back to Admin Dashboard</a>
+    <a href="{{ url_for('index') }}">Back to Homepage</a>
 
-            <form method="POST" action="{{ url_for('edit_artist', artist_id=artist.id) }}">
-                <input type="text" name="city" value="{{ artist.city }}">
-                <input type="text" name="name" value="{{ artist.name }}">
-                <input type="number" name="cp" value="{{ artist.cp }}">
-                <textarea name="description">{{ artist.description }}</textarea>
-                <textarea name="special_ability">{{ artist.special_ability }}</textarea>
-                <button type="submit">Edit Artist</button>
-            </form>
-        </div>
-        {% endfor %}
-    </div>
+    <script>
+        function editArtist(artistId) {
+            // Toggle editable fields
+            document.getElementById('name-' + artistId).style.display = 'none';
+            document.getElementById('input-name-' + artistId).style.display = 'block';
+
+            document.getElementById('cp-' + artistId).style.display = 'none';
+            document.getElementById('input-cp-' + artistId).style.display = 'block';
+
+            document.getElementById('description-' + artistId).style.display = 'none';
+            document.getElementById('input-description-' + artistId).style.display = 'block';
+
+            const ability = document.getElementById('ability-' + artistId);
+            const inputAbility = document.getElementById('input-ability-' + artistId);
+            if (ability) {
+                ability.style.display = 'none';
+                inputAbility.style.display = 'block';
+            }
+
+            // Show the save button
+            document.getElementById('save-btn-' + artistId).style.display = 'inline';
+        }
+    </script>
 </body>
 </html>
 

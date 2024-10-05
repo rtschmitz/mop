@@ -2,6 +2,10 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import os
+import subprocess
+from collections import defaultdict
+import random
+from random import randint
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Needed for session management
@@ -16,6 +20,8 @@ ADMIN_PASSWORD = 'pass'
 # Initialize the database
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
+artist_houses = ['Soresi', 'Laramack', 'Isleif']
 
 class GlobalResource(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -86,9 +92,6 @@ class Turn(db.Model):
     status = db.Column(db.String(20), nullable=False, default='submitted')  # 'submitted' or 'released'
     lore = db.Column(db.Text, nullable=True)  # Add this line for lore
 
-# Manually create the database tables when the app starts
-with app.app_context():
-    db.create_all()
 
 # Route to view global resources (public for all users)
 @app.route('/')
@@ -134,14 +137,13 @@ def submit_turn():
 
         # Initialize the artist_bids list
         artist_bids = []
-        for target, ap_bid, wealth_bid, recipient, outcome, notes in zip(
+        for target, ap_bid, wealth_bid, recipient, notes in zip(
                 request.form.getlist('artist_bids_target[]'),
                 request.form.getlist('artist_bids_ap_bid[]'),
                 request.form.getlist('artist_bids_wealth_bid[]'),
                 request.form.getlist('artist_bids_recipient[]'),
-                request.form.getlist('artist_bids_outcome[]'),
                 request.form.getlist('artist_bids_notes[]')):
-            artist_bids.append(f"{target}\t{ap_bid}\t{wealth_bid}\t{recipient}\t{outcome}\t{notes}")
+            artist_bids.append(f"{target}\t{ap_bid}\t{wealth_bid}\t{recipient}\t\t{notes}")
             total_ap_spent += float(ap_bid)
             total_wealth_spent += float(wealth_bid)
         artist_bids_text = "\n".join(artist_bids)
@@ -174,11 +176,12 @@ def submit_turn():
             total_dynastic_spl += float(dynastic)
         splendor_sources_text = "\n".join(splendor_sources)
 
-        # Get the bonus resources from the form
-        bonus_spl = float(request.form['bonus_spl'])
-        bonus_ap = float(request.form['bonus_ap'])
-        bonus_wealth = float(request.form['bonus_wealth'])
-        bonus_culture = float(request.form['bonus_culture'])
+        # Safely get the bonus resources from the form, using 0 if fields are empty
+        bonus_spl = float(request.form['bonus_spl']) if request.form['bonus_spl'] else 0
+        bonus_ap = float(request.form['bonus_ap']) if request.form['bonus_ap'] else 0
+        bonus_wealth = float(request.form['bonus_wealth']) if request.form['bonus_wealth'] else 0
+        bonus_culture = float(request.form['bonus_culture']) if request.form['bonus_culture'] else 0
+
 
         # Final resource calculation (including bonuses)
         final_ap = ap - total_ap_spent + total_income_ap + bonus_ap
@@ -217,14 +220,31 @@ def submit_turn():
 
     # Query all houses from GlobalResource to populate the dropdown
     houses = GlobalResource.query.all()
-    return render_template('submit_turn.html', houses=houses, global_turn=global_turn)
+
+    artists_by_city = defaultdict(list)
+    available_artists = Artist.query.all()
+
+    for artist in available_artists:
+        artists_by_city[artist.city].append(artist)
+
+    return render_template('submit_turn.html', artists_by_city=artists_by_city, houses=houses, global_turn=global_turn)
+#    return render_template('submit_turn.html', available_artists=available_artists, houses=houses, global_turn=global_turn)
 
 
 # Route for users to view released turns only (public)
 @app.route('/view_turns')
 def view_turns():
     turns = Turn.query.filter_by(status='released').all()
-    return render_template('view_turns.html', turns=turns)
+    artists_by_turn = defaultdict(dict)
+    
+    # Fetch all artists and group them by turn
+    artists = Artist.query.all()
+    for artist in artists:
+        # Associate each artist with their specific turn number
+        artists_by_turn[artist.turn_number][artist.name] = artist.cp
+
+    return render_template('view_turns.html', turns=turns, artists_by_turn=artists_by_turn)
+
 
 # Admin login
 @app.route('/admin', methods=['GET', 'POST'])
@@ -243,16 +263,47 @@ def admin_dashboard():
     if not session.get('admin'):
         return redirect(url_for('admin'))
 
+    # Query all turns
     turns = Turn.query.all()
-    global_turn = GlobalTurn.query.first().turn_number  # Query the global turn number
-    return render_template('admin_dashboard.html', turns=turns, global_turn=global_turn)
+
+    # Get the current global turn number
+    global_turn = GlobalTurn.query.first().turn_number
+
+    # Create a dictionary to hold artists associated with each turn number
+    artists_by_turn = {}
+
+    # For each turn, find the artists associated with that turn's turn_number
+    for turn in turns:
+        # Fetch artists based on the specific turn_number
+        artists = Artist.query.filter_by(turn_number=turn.turn_number).all()
+        # Store the artist name and CP in the dictionary for the specific turn_number
+        artists_by_turn[turn.turn_number] = {artist.name: artist.cp for artist in artists}
+
+    return render_template(
+        'admin_dashboard.html', 
+        turns=turns, 
+        global_turn=global_turn, 
+        artists_by_turn=artists_by_turn
+    )
+
 
 # Route for viewing the Artist Auction (public for all users)
 @app.route('/artist_auction')
 def artist_auction():
-    # Query all artists from the database to display them in the auction
-    artists = Artist.query.all()
-    return render_template('artist_auction.html', artists=artists)
+    # Retrieve the current global turn
+    global_turn = GlobalTurn.query.first().turn_number
+
+    # Query only the artists for the current global turn
+    artists = Artist.query.filter_by(turn_number=global_turn).all()
+
+    # Group artists by city
+    artists_by_city = {}
+    for artist in artists:
+        if artist.city not in artists_by_city:
+            artists_by_city[artist.city] = []
+        artists_by_city[artist.city].append(artist)
+
+    return render_template('artist_auction.html', artists_by_city=artists_by_city, global_turn=global_turn)
 
 
 # Route to release a turn (only for admin)
@@ -292,28 +343,42 @@ def manage_artists():
     if not session.get('admin'):
         return redirect(url_for('admin'))
 
+    # Get the current global turn number
+    global_turn = GlobalTurn.query.first().turn_number
+    
+    # Handle form submission to add new artists
     if request.method == 'POST':
-        city = request.form['city']
         name = request.form['name']
-        cp = request.form['cp']
+        city = request.form['city']
+        cp = int(request.form['cp'])
         description = request.form['description']
-        special_ability = request.form['special_ability']
+        special_ability = request.form.get('special_ability')
 
-        # Add new artist to the database
+        # Add the new artist to the database, associating with the current turn
         new_artist = Artist(
-            city=city,
-            name=name,
-            cp=cp,
-            description=description,
-            special_ability=special_ability
+            name=name, 
+            city=city, 
+            cp=cp, 
+            description=description, 
+            special_ability=special_ability,
+            turn_number=global_turn  # Associate new artist with the current turn
         )
         db.session.add(new_artist)
         db.session.commit()
         return redirect(url_for('manage_artists'))
+    
+    # Only display artists for the current turn
+    artists = Artist.query.filter_by(turn_number=global_turn).all()
+    
+    # Group artists by city
+    artists_by_city = {}
+    for artist in artists:
+        if artist.city not in artists_by_city:
+            artists_by_city[artist.city] = []
+        artists_by_city[artist.city].append(artist)
 
-    # Query existing artists to edit
-    artists = Artist.query.all()
-    return render_template('manage_artists.html', artists=artists)
+    return render_template('manage_artists.html', artists_by_city=artists_by_city, global_turn=global_turn)
+
 
 # Route for editing an artist (admin only)
 @app.route('/admin/edit_artist/<int:artist_id>', methods=['POST'])
@@ -321,24 +386,31 @@ def edit_artist(artist_id):
     if not session.get('admin'):
         return redirect(url_for('admin'))
 
+    # Fetch the artist by ID
     artist = Artist.query.get(artist_id)
+
     if artist:
-        artist.city = request.form['city']
+        # Update the artist fields from the form
         artist.name = request.form['name']
         artist.cp = request.form['cp']
         artist.description = request.form['description']
-        artist.special_ability = request.form['special_ability']
+        artist.special_ability = request.form.get('special_ability', '')
+
+        # Commit the changes to the database
         db.session.commit()
-    
+
     return redirect(url_for('manage_artists'))
+
 
 class Artist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
-    city = db.Column(db.String(100))
-    cp = db.Column(db.Integer)  # Culture Points
-    description = db.Column(db.Text)
-    special_ability = db.Column(db.Text)
+    name = db.Column(db.String(100), nullable=False)
+    city = db.Column(db.String(100), nullable=False)
+    cp = db.Column(db.Integer, nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    special_ability = db.Column(db.String(255), nullable=True)
+    turn_number = db.Column(db.Integer, nullable=False)  # Add this line
+
 
 
 # Route to edit a specific turn (only for admin)
@@ -348,42 +420,82 @@ def edit_turn(turn_id):
         return redirect(url_for('admin'))
 
     turn = Turn.query.get(turn_id)
+    houses = GlobalResource.query.all()
 
     if request.method == 'POST':
         # Update turn fields from the form
         turn.house = request.form['house']
-        turn.splendor = float(request.form['splendor'])
-        turn.ap = float(request.form['ap'])
-        turn.wealth = float(request.form['wealth'])
-        turn.culture = float(request.form['culture'])
-        turn.actions = request.form['actions']
-        turn.artist_bids = request.form['artist_bids']
-        turn.income = request.form['income']
-        turn.splendor_sources = request.form['splendor_sources']
-        turn.bonus_spl = float(request.form['bonus_spl'])
-        turn.bonus_ap = float(request.form['bonus_ap'])
-        turn.bonus_wealth = float(request.form['bonus_wealth'])
-        turn.bonus_culture = float(request.form['bonus_culture'])
+        turn.splendor = float(request.form['splendor']) if request.form['splendor'] else 0
+        turn.ap = float(request.form['ap']) if request.form['ap'] else 0
+        turn.wealth = float(request.form['wealth']) if request.form['wealth'] else 0
+        turn.culture = float(request.form['culture']) if request.form['culture'] else 0
+        turn.bonus_spl = float(request.form['bonus_spl']) if request.form['bonus_spl'] else 0
+        turn.bonus_ap = float(request.form['bonus_ap']) if request.form['bonus_ap'] else 0
+        turn.bonus_wealth = float(request.form['bonus_wealth']) if request.form['bonus_wealth'] else 0
+        turn.bonus_culture = float(request.form['bonus_culture']) if request.form['bonus_culture'] else 0
         turn.lore = request.form['lore']  # Add lore to be updated
 
+        # Rebuild actions, artist bids, income, and splendor sources
+        actions = []
+        for i in range(len(request.form.getlist('actions_action[]'))):
+            action = request.form.getlist('actions_action[]')[i]
+            ap_cost = request.form.getlist('actions_ap_cost[]')[i]
+            wealth_cost = request.form.getlist('actions_wealth_cost[]')[i]
+            culture_cost = request.form.getlist('actions_culture_cost[]')[i]
+            notes = request.form.getlist('actions_notes[]')[i]
+            actions.append(f"{action}\t{ap_cost}\t{wealth_cost}\t{culture_cost}\t{notes}")
+        turn.actions = '\n'.join(actions)
+
+        artist_bids = []
+        for i in range(len(request.form.getlist('artist_bids_target[]'))):
+            target = request.form.getlist('artist_bids_target[]')[i]
+            ap_bid = request.form.getlist('artist_bids_ap_bid[]')[i]
+            wealth_bid = request.form.getlist('artist_bids_wealth_bid[]')[i]
+            recipient = request.form.getlist('artist_bids_recipient[]')[i]
+            outcome = request.form.getlist('artist_bids_outcome[]')[i]
+            notes = request.form.getlist('artist_bids_notes[]')[i]
+            artist_bids.append(f"{target}\t{ap_bid}\t{wealth_bid}\t{recipient}\t{outcome}\t{notes}")
+        turn.artist_bids = '\n'.join(artist_bids)
+
+        income = []
+        for i in range(len(request.form.getlist('income_source[]'))):
+            source = request.form.getlist('income_source[]')[i]
+            wealth = request.form.getlist('income_wealth[]')[i]
+            ap = request.form.getlist('income_ap[]')[i]
+            notes = request.form.getlist('income_notes[]')[i]
+            income.append(f"{source}\t{wealth}\t{ap}\t{notes}")
+        turn.income = '\n'.join(income)
+
+        splendor_sources = []
+        for i in range(len(request.form.getlist('splendor_sources_source[]'))):
+            source = request.form.getlist('splendor_sources_source[]')[i]
+            dynastic = request.form.getlist('splendor_sources_dynastic[]')[i]
+            civic = request.form.getlist('splendor_sources_civic[]')[i]
+            client = request.form.getlist('splendor_sources_client[]')[i]
+            tithed = request.form.getlist('splendor_sources_tithed[]')[i]
+            notes = request.form.getlist('splendor_sources_notes[]')[i]
+            splendor_sources.append(f"{source}\t{dynastic}\t{civic}\t{client}\t{tithed}\t{notes}")
+        turn.splendor_sources = '\n'.join(splendor_sources)
 
         # Recalculate final resources
-        # Parse actions and bids to calculate total costs
-        total_ap_spent = sum(float(line.split('\t')[1]) for line in turn.actions.split('\n') if line.split('\t')[1] != '0')
-        total_wealth_spent = sum(float(line.split('\t')[2]) for line in turn.actions.split('\n') if line.split('\t')[2] != '0')
-        total_culture_spent = sum(float(line.split('\t')[3]) for line in turn.actions.split('\n') if line.split('\t')[3] != '0')
+        def safe_float(value):
+            try:
+                return float(value)
+            except ValueError:
+                return 0
 
-        total_ap_bid = sum(float(line.split('\t')[1]) for line in turn.artist_bids.split('\n') if line.split('\t')[1] != '0')
-        total_wealth_bid = sum(float(line.split('\t')[2]) for line in turn.artist_bids.split('\n') if line.split('\t')[2] != '0')
+        total_ap_spent = sum(safe_float(line.split('\t')[1]) for line in turn.actions.split('\n') if line and len(line.split('\t')) > 1)
+        total_wealth_spent = sum(safe_float(line.split('\t')[2]) for line in turn.actions.split('\n') if line and len(line.split('\t')) > 2)
+        total_culture_spent = sum(safe_float(line.split('\t')[3]) for line in turn.actions.split('\n') if line and len(line.split('\t')) > 3)
 
-        # Parse income to calculate income values
-        total_ap_income = sum(float(line.split('\t')[2]) for line in turn.income.split('\n') if line.split('\t')[2] != '0')
-        total_wealth_income = sum(float(line.split('\t')[1]) for line in turn.income.split('\n') if line.split('\t')[1] != '0')
+        total_ap_bid = sum(safe_float(line.split('\t')[1]) for line in turn.artist_bids.split('\n') if line and len(line.split('\t')) > 1)
+        total_wealth_bid = sum(safe_float(line.split('\t')[2]) for line in turn.artist_bids.split('\n') if line and len(line.split('\t')) > 2)
 
-        # Calculate total dynastic splendor from splendor sources
-        total_dynastic_splendor = sum(float(line.split('\t')[1]) for line in turn.splendor_sources.split('\n') if line.split('\t')[1] != '0')
+        total_ap_income = sum(safe_float(line.split('\t')[2]) for line in turn.income.split('\n') if line and len(line.split('\t')) > 2)
+        total_wealth_income = sum(safe_float(line.split('\t')[1]) for line in turn.income.split('\n') if line and len(line.split('\t')) > 1)
 
-        # Update final resources
+        total_dynastic_splendor = sum(safe_float(line.split('\t')[1]) for line in turn.splendor_sources.split('\n') if line and len(line.split('\t')) > 1)
+
         turn.final_ap = turn.ap - total_ap_spent - total_ap_bid + total_ap_income + turn.bonus_ap
         turn.final_wealth = turn.wealth - total_wealth_spent - total_wealth_bid + total_wealth_income + turn.bonus_wealth
         turn.final_culture = turn.culture - total_culture_spent + turn.bonus_culture
@@ -392,8 +504,15 @@ def edit_turn(turn_id):
         # Save the changes
         db.session.commit()
         return redirect(url_for('admin_dashboard'))
+    artists_by_city = defaultdict(list)
+    available_artists = Artist.query.all()
 
-    return render_template('edit_turn.html', turn=turn)
+    for artist in available_artists:
+        artists_by_city[artist.city].append(artist)
+
+
+    return render_template('edit_turn.html', artists_by_city=artists_by_city, turn=turn,houses=houses)
+
 
 @app.route('/view_house_turns/<house>')
 def view_house_turns(house):
@@ -481,9 +600,225 @@ def delete_turn(turn_id):
 
     return redirect(url_for('admin_dashboard'))
 
+
+# Function to initialize the artists in the database and associate them with Turn 18
+def initialize_artists():
+    initial_artists = [
+        {"name": "Aqueduct", "city": "Corpolla", "cp": 3, "description": "", "special_ability": "Instead of gaining culture, place a farm on a hill or mountain tile and start with 6 less AP next turn"},
+        {"name": "Vulgar, Vulgar Art", "city": "Corpolla", "cp": 4, "description": "", "special_ability": ""},
+        {"name": "Fig Leaf Vandal", "city": "Corpolla", "cp": 4, "description": "", "special_ability": ""},
+
+        {"name": "Nova Paganism", "city": "Marafel", "cp": 1, "description": "", "special_ability": "When mustering troops, choose for them to count as Harmonious, Glorious, or Balanced strength."},
+        {"name": "Neopaganism", "city": "Marafel", "cp": 3, "description": "", "special_ability": ""},
+        {"name": "Self Knowledge", "city": "Marafel", "cp": 3, "description": "", "special_ability": "Instead of gaining culture, know the turn that a doomed character will die."},
+
+        {"name": "Lagoon Platform", "city": "Fairend", "cp": 3, "description": "", "special_ability": ""},
+        {"name": "Reflection", "city": "Fairend", "cp": 3, "description": "", "special_ability": "Instead of gaining culture, know the turn that a doomed character will die."},
+
+        {"name": "Quoins", "city": "Garub", "cp": 3, "description": "", "special_ability": ""},
+        {"name": "Gemstone Cameo", "city": "Garub", "cp": 3, "description": "", "special_ability": ""},
+        {"name": "Imitation of the Martyrs", "city": "Garub", "cp": 3, "description": "", "special_ability": ""},
+
+        {"name": "Lagoon Concerto", "city": "Laramack", "cp": 1, "description": "", "special_ability": ""},
+        {"name": "Victory Anthem", "city": "Laramack", "cp": 4, "description": "", "special_ability": ""},
+
+        {"name": "Pandemonium", "city": "Hlerheim", "cp": 1, "description": "", "special_ability": "Reduce riot chance, by example."},
+        {"name": "Just a Cough", "city": "Hlerheim", "cp": 1, "description": "", "special_ability": "Instead of gaining culture, know the turn that a doomed character will die."},
+        {"name": "Mural of Familiar Faces", "city": "Hlerheim", "cp": 6, "description": "", "special_ability": ""},
+        {"name": "Artistic Innovation", "city": "Hlerheim", "cp": 7, "description": "", "special_ability": ""},
+
+        {"name": "Lagoon Platform", "city": "Sabor", "cp": 1, "description": "", "special_ability": ""},
+
+        {"name": "Know Thyself", "city": "Rookery", "cp": 5, "description": "", "special_ability": ""},
+        {"name": "Mirror of Princes", "city": "Rookery", "cp": 1, "description": "", "special_ability": "Ask Sam one question about the hidden rules and get an honest answer"},
+
+        {"name": "Patron Saint", "city": "Neckenden", "cp": 5, "description": "", "special_ability": ""},
+
+        {"name": "Royal Subtext", "city": "Varheld", "cp": 2, "description": "", "special_ability": "On your next turn you may issue an edict for free"}
+    ]
+
+    # Add each artist to the database and associate them with Turn 18
+    for artist_data in initial_artists:
+        artist = Artist(
+            name=artist_data['name'],
+            city=artist_data['city'],
+            cp=artist_data['cp'],
+            description=artist_data['description'],
+            special_ability=artist_data['special_ability'],
+            turn_number=18  # Associate the artist with Turn 18
+        )
+        db.session.add(artist)
+
+    # Commit the changes to save the artists
+    db.session.commit()
+
+    return "Artists for Turn 18 have been initialized!"
+
+@app.route('/run_artist_auction', methods=['POST'])
+def run_artist_auction():
+    # Get the current global turn number
+    global_turn = GlobalTurn.query.first().turn_number
+    next_turn_number = global_turn + 1  # Prepare for the next turn
+
+    # Dictionary to store bids per artist
+    artist_bids = defaultdict(list)
+
+    # Fetch all submitted turns for the current global turn
+    turns = Turn.query.filter_by(turn_number=global_turn).all()
+
+    # Fetch all artists for the current turn
+    current_turn_artists = Artist.query.filter_by(turn_number=global_turn).all()
+    artist_dict = {artist.name: artist for artist in current_turn_artists}
+
+    auction_results = []
+
+    # Process each turn and extract artist bids
+    for turn in turns:
+        for bid in turn.artist_bids.split('\n'):
+            if bid.strip():
+                bid_values = bid.split('\t')
+                artist_name = bid_values[0]
+                ap_bid = float(bid_values[1])
+                wealth_bid = float(bid_values[2])
+                recipient = bid_values[3]
+                notes = bid_values[5]
+
+                # Calculate total bid value before applying any modifiers
+                bid_value = ap_bid + wealth_bid
+
+                # Store the bid for the artist (without modification for the comparison)
+                artist_bids[artist_name].append({
+                    'house': turn.house,
+                    'recipient': recipient,
+                    'bid_value': bid_value,
+                    'ap_bid': ap_bid,
+                    'wealth_bid': wealth_bid,
+                    'notes': notes,
+                    'turn': turn,
+                    'original_bid': bid  # Store original bid string to update later
+                })
+
+    # Track artists who have received bids
+    artists_with_bids = set(artist_bids.keys())
+
+    # Process each artist and determine the highest bid
+    for artist_name, bids in artist_bids.items():
+        # Apply the modifier for houses with the artist trait when determining the winner
+        def adjusted_bid_value(bid):
+            if bid['house'] in ['Soresi', 'Laramack', 'Isleif']:
+                return bid['bid_value'] * 1.5  # Apply the 50% modifier
+            return bid['bid_value']
+
+        # Determine the highest bid using the adjusted bid value
+        winning_bid = max(bids, key=lambda x: adjusted_bid_value(x))
+        winning_turn = winning_bid['turn']
+        winner_house = winning_bid['house']
+        recipient_house = winning_bid['recipient']
+
+        # Process each bid and mark "Won" or "Outbid"
+        for bid in bids:
+            if bid == winning_bid:
+                bid['outcome'] = 'Won'
+            else:
+                bid['outcome'] = 'Outbid'
+                # Reverse the AP and wealth spent for outbid bids
+                bid['turn'].final_ap += bid['ap_bid']
+                bid['turn'].final_wealth += bid['wealth_bid']
+
+        # Update the artist bids for each turn (set "Won" or "Outbid")
+        for turn in turns:
+            updated_artist_bids = []
+            for bid in bids:
+                if bid['turn'] == turn:
+                    updated_artist_bid = f"{artist_name}\t{bid['ap_bid']}\t{bid['wealth_bid']}\t{bid['recipient']}\t{bid['outcome']}\t{bid['notes']}"
+                    updated_artist_bids.append(updated_artist_bid)
+
+            # If the turn has artist bids, update it
+            if updated_artist_bids:
+                turn.artist_bids = "\n".join(updated_artist_bids)
+
+        # Update the artist based on the d4 roll
+        artist_outcome = "Returned to Academy"  # Default
+        d4_roll = randint(1, 4)
+
+        # Apply house modifier for rolling
+        if winner_house in ['Soresi', 'Laramack', 'Isleif']:
+            if d4_roll == 1:
+                artist_outcome = "Expended"
+        else:
+            if d4_roll in [1, 2]:
+                artist_outcome = "Expended"
+
+        # Update the artist in the database based on the roll
+        artist = artist_dict[artist_name]
+
+        if artist_outcome == "Expended":
+            # Do not remove the artist from the database, but do not carry it over to the next turn
+            pass
+        else:
+            # Clone the artist for the next turn, increment CP if returned to the academy
+            new_artist = Artist(
+                name=artist.name,
+                city=artist.city,
+                cp=artist.cp + 1,  # Increase CP if returned to the academy
+                description=artist.description,
+                special_ability=None,  # Remove special ability
+                turn_number=next_turn_number  # Associate with the next turn
+            )
+            db.session.add(new_artist)
+
+        # Add the culture points of the artist to the recipient's bonus culture
+        recipient_turn = Turn.query.filter_by(house=recipient_house, turn_number=global_turn).first()
+        if recipient_turn:
+            recipient_turn.bonus_culture += artist.cp  # Add the artist CP to bonus culture
+            # Recalculate the final culture after adding the bonus culture
+            recipient_turn.final_culture = recipient_turn.culture + recipient_turn.bonus_culture
+
+        # Create an entry for the auction results
+        auction_results.append({
+            'artist': artist_name,
+            'winner': winner_house,
+            'recipient': recipient_house,
+            'outcome': winning_bid['outcome'],
+            'status': artist_outcome,
+            'd4_roll': d4_roll  # Include the roll for display purposes
+        })
+
+    # Add artists who received no bids to the next turn's artist list
+    for artist in current_turn_artists:
+        if artist.name not in artists_with_bids:
+            # Clone the artist for the next turn with the same CP and special ability
+            new_artist = Artist(
+                name=artist.name,
+                city=artist.city,
+                cp=artist.cp,  # Carry over the same CP
+                description=artist.description,
+                special_ability=artist.special_ability,  # Carry over the special ability
+                turn_number=next_turn_number  # Associate with the next turn
+            )
+            db.session.add(new_artist)
+
+    # Commit all changes to the database
+    db.session.commit()
+
+    # Render the auction summary page with results
+    return render_template('auction_summary.html', auction_results=auction_results)
+
+
+# Function to check if the artist table is empty and initialize if necessary
+def check_and_initialize_artists():
+    if Artist.query.count() == 0:  # Check if the artist table is empty
+        print("No artists found, initializing...")
+        initialize_artists()
+
+# Manually create the database tables when the app starts
+with app.app_context():
+    db.create_all()
+
 if __name__ == '__main__':
     with app.app_context():
         # Call the function to populate global_resources if empty
         populate_global_resources()
+        check_and_initialize_artists()
     port = int(os.environ.get('PORT', 5000))  # Use PORT from environment, default to 5000
     app.run(host='0.0.0.0', port=port, debug=True)

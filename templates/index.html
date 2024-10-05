@@ -64,11 +64,26 @@
             text-align: center;
             margin: 30px 0;
         }
+
+        .nav-link {
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #6a1b9a;
+            color: white;
+            display: inline-block;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .nav-link:hover {
+            background-color: #4a148c;
+        }
+
     </style>
 </head>
 <body>
     <h1>Global Resource Table (Turn {{ global_turn }})</h1>
-
 
     <!-- Display the map -->
     <div class="map-container">
@@ -102,6 +117,7 @@
     <div style="text-align:center;">
         <a href="{{ url_for('submit_turn') }}">Submit a Turn</a><br>
         <a href="{{ url_for('view_turns') }}">View Released Turns</a><br>
+        <a href="{{ url_for('artist_auction') }}" class="nav-link">View Artist Auction</a><br>
         <a href="{{ url_for('admin') }}">Admin Login</a>
     </div>
 </body>
