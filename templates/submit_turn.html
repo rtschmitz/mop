@@ -136,9 +136,9 @@
             if (section === 'actions') {
                 newRow.innerHTML = `
                     <div><label>Action:</label><input type="text" name="actions_action[]" required></div>
-                    <div><label>AP Cost:</label><input type="number" name="actions_ap_cost[]" required></div>
-                    <div><label>Wealth Cost:</label><input type="number" name="actions_wealth_cost[]" required></div>
-                    <div><label>Culture Cost:</label><input type="number" name="actions_culture_cost[]" required></div>
+                    <div><label>AP Cost:</label><input type="number" name="actions_ap_cost[]" step="0.25" required></div>
+                    <div><label>Wealth Cost:</label><input type="number" name="actions_wealth_cost[]" step="0.25" required></div>
+                    <div><label>Culture Cost:</label><input type="number" name="actions_culture_cost[]" step="0.25" required></div>
                     <div><label>Notes:</label><textarea name="actions_notes[]"></textarea></div>
                 `;
             } else if (section === 'artist_bids') {
@@ -159,8 +159,8 @@
                             </optgroup>
                         {% endfor %}
                     </select></div>
-                    <div><label>AP Bid:</label><input type="number" name="artist_bids_ap_bid[]" required></div>
-                    <div><label>Wealth Bid:</label><input type="number" name="artist_bids_wealth_bid[]" required></div>
+                    <div><label>AP Bid:</label><input type="number" name="artist_bids_ap_bid[]" step="0.25" required></div>
+                    <div><label>Wealth Bid:</label><input type="number" name="artist_bids_wealth_bid[]" step="0.25" required></div>
 <div><label>Recipient:</label>
     <select name="artist_bids_recipient[]" required>
         <option value="">Select House</option>
@@ -175,17 +175,17 @@
             } else if (section === 'income') {
                 newRow.innerHTML = `
                     <div><label>Source:</label><input type="text" name="income_source[]" required></div>
-                    <div><label>Wealth:</label><input type="number" name="income_wealth[]" required></div>
-                    <div><label>AP:</label><input type="number" name="income_ap[]" required></div>
+                    <div><label>Wealth:</label><input type="number" name="income_wealth[]" step="0.25" required></div>
+                    <div><label>AP:</label><input type="number" name="income_ap[]" step="0.25" required></div>
                     <div><label>Notes:</label><textarea name="income_notes[]"></textarea></div>
                 `;
             } else if (section === 'splendor_sources') {
                 newRow.innerHTML = `
                     <div><label>Source:</label><input type="text" name="splendor_sources_source[]" required></div>
-                    <div><label>Dynastic:</label><input type="number" name="splendor_sources_dynastic[]" required></div>
-                    <div><label>Civic:</label><input type="number" name="splendor_sources_civic[]" required></div>
-                    <div><label>Client:</label><input type="number" name="splendor_sources_client[]" required></div>
-                    <div><label>Tithed:</label><input type="number" name="splendor_sources_tithed[]" required></div>
+                    <div><label>Dynastic:</label><input type="number" name="splendor_sources_dynastic[]" step="0.25" required></div>
+                    <div><label>Civic:</label><input type="number" name="splendor_sources_civic[]" step="0.25" required></div>
+                    <div><label>Client:</label><input type="number" name="splendor_sources_client[]" step="0.25" required></div>
+                    <div><label>Tithed:</label><input type="number" name="splendor_sources_tithed[]" step="0.25" required></div>
                     <div><label>Notes:</label><textarea name="splendor_sources_notes[]"></textarea></div>
                 `;
             }
@@ -206,10 +206,10 @@
         </select>
 
         <div class="row">
-            <div><label for="splendor">Splendor:</label><input type="number" id="splendor" name="splendor" required></div>
-            <div><label for="ap">AP:</label><input type="number" id="ap" name="ap" required></div>
-            <div><label for="wealth">Wealth:</label><input type="number" id="wealth" name="wealth" required></div>
-            <div><label for="culture">Culture:</label><input type="number" id="culture" name="culture" required></div>
+            <div><label for="splendor">Splendor:</label><input type="number" id="splendor" name="splendor" step="0.25" required></div>
+            <div><label for="ap">AP:</label><input type="number" id="ap" name="ap" step="0.25" required></div>
+            <div><label for="wealth">Wealth:</label><input type="number" id="wealth" name="wealth" step="0.25" required></div>
+            <div><label for="culture">Culture:</label><input type="number" id="culture" name="culture" step="0.25" required></div>
         </div>
 
         <!-- Actions Table -->
@@ -235,10 +235,10 @@
         <!-- Bonuses Table -->
         <h2>Bonuses</h2>
         <div class="row">
-            <div><label for="bonus_spl">Spl:</label><input type="number" id="bonus_spl" name="bonus_spl"></div>
-            <div><label for="bonus_ap">AP:</label><input type="number" id="bonus_ap" name="bonus_ap"></div>
-            <div><label for="bonus_wealth">Wealth:</label><input type="number" id="bonus_wealth" name="bonus_wealth"></div>
-            <div><label for="bonus_culture">Culture:</label><input type="number" id="bonus_culture" name="bonus_culture"></div>
+            <div><label for="bonus_spl">Spl:</label><input type="number" id="bonus_spl" name="bonus_spl" step="0.25"></div>
+            <div><label for="bonus_ap">AP:</label><input type="number" id="bonus_ap" name="bonus_ap" step="0.25"></div>
+            <div><label for="bonus_wealth">Wealth:</label><input type="number" id="bonus_wealth" name="bonus_wealth" step="0.25"></div>
+            <div><label for="bonus_culture">Culture:</label><input type="number" id="bonus_culture" name="bonus_culture" step="0.25"></div>
         </div>
 
         <!-- Lore Section -->
@@ -248,6 +248,9 @@
         <!-- Submit Button -->
         <button type="submit" class="submit-btn">Submit Turn</button>
     </form>
+
+    <br>
+    <a href="{{ url_for('index') }}" class="back-link">Back to Global Resource Table</a>
 </body>
 </html>
 

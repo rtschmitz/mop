@@ -134,16 +134,16 @@
             if (section === 'actions') {
                 newRow.innerHTML = `
                     <div><label>Action:</label><input type="text" name="actions_action[]" required></div>
-                    <div><label>AP Cost:</label><input type="number" name="actions_ap_cost[]" required></div>
-                    <div><label>Wealth Cost:</label><input type="number" name="actions_wealth_cost[]" required></div>
-                    <div><label>Culture Cost:</label><input type="number" name="actions_culture_cost[]" required></div>
+                    <div><label>AP Cost:</label><input type="number" name="actions_ap_cost[]" step="0.25" required></div>
+                    <div><label>Wealth Cost:</label><input type="number" name="actions_wealth_cost[]" step="0.25" required></div>
+                    <div><label>Culture Cost:</label><input type="number" name="actions_culture_cost[]" step="0.25" required></div>
                     <div><label>Notes:</label><textarea name="actions_notes[]"></textarea></div>
                 `;
             } else if (section === 'artist_bids') {
                 newRow.innerHTML = `
                     <div><label>Bid Target:</label><input type="text" name="artist_bids_target[]" required></div>
-                    <div><label>AP Bid:</label><input type="number" name="artist_bids_ap_bid[]" required></div>
-                    <div><label>Wealth Bid:</label><input type="number" name="artist_bids_wealth_bid[]" required></div>
+                    <div><label>AP Bid:</label><input type="number" name="artist_bids_ap_bid[]" step="0.25" required></div>
+                    <div><label>Wealth Bid:</label><input type="number" name="artist_bids_wealth_bid[]" step="0.25" required></div>
                     <div><label>Recipient:</label><input type="text" name="artist_bids_recipient[]"></div>
                     <div><label>Outcome:</label><input type="text" name="artist_bids_outcome[]"></div>
                     <div><label>Notes:</label><textarea name="artist_bids_notes[]"></textarea></div>
@@ -151,17 +151,17 @@
             } else if (section === 'income') {
                 newRow.innerHTML = `
                     <div><label>Source:</label><input type="text" name="income_source[]" required></div>
-                    <div><label>Wealth:</label><input type="number" name="income_wealth[]" required></div>
-                    <div><label>AP:</label><input type="number" name="income_ap[]" required></div>
+                    <div><label>Wealth:</label><input type="number" name="income_wealth[]" step="0.25" required></div>
+                    <div><label>AP:</label><input type="number" name="income_ap[]" step="0.25" required></div>
                     <div><label>Notes:</label><textarea name="income_notes[]"></textarea></div>
                 `;
             } else if (section === 'splendor_sources') {
                 newRow.innerHTML = `
                     <div><label>Source:</label><input type="text" name="splendor_sources_source[]" required></div>
-                    <div><label>Dynastic:</label><input type="number" name="splendor_sources_dynastic[]" required></div>
-                    <div><label>Civic:</label><input type="number" name="splendor_sources_civic[]" required></div>
-                    <div><label>Client:</label><input type="number" name="splendor_sources_client[]" required></div>
-                    <div><label>Tithed:</label><input type="number" name="splendor_sources_tithed[]" required></div>
+                    <div><label>Dynastic:</label><input type="number" name="splendor_sources_dynastic[]" step="0.25" required></div>
+                    <div><label>Civic:</label><input type="number" name="splendor_sources_civic[]" step="0.25" required></div>
+                    <div><label>Client:</label><input type="number" name="splendor_sources_client[]" step="0.25" required></div>
+                    <div><label>Tithed:</label><input type="number" name="splendor_sources_tithed[]" step="0.25" required></div>
                     <div><label>Notes:</label><textarea name="splendor_sources_notes[]"></textarea></div>
                 `;
             }
@@ -180,10 +180,10 @@
         <input type="text" id="house" name="house" value="{{ turn.house }}" required>
 
         <div class="row">
-            <div><label for="splendor">Splendor:</label><input type="number" id="splendor" name="splendor" value="{{ turn.splendor }}" required></div>
-            <div><label for="ap">AP:</label><input type="number" id="ap" name="ap" value="{{ turn.ap }}" required></div>
-            <div><label for="wealth">Wealth:</label><input type="number" id="wealth" name="wealth" value="{{ turn.wealth }}" required></div>
-            <div><label for="culture">Culture:</label><input type="number" id="culture" name="culture" value="{{ turn.culture }}" required></div>
+            <div><label for="splendor">Splendor:</label><input type="number" id="splendor" name="splendor" value="{{ turn.splendor }}" step="0.25" required></div>
+            <div><label for="ap">AP:</label><input type="number" id="ap" name="ap" value="{{ turn.ap }}" step="0.25" required></div>
+            <div><label for="wealth">Wealth:</label><input type="number" id="wealth" name="wealth" value="{{ turn.wealth }}" step="0.25" required></div>
+            <div><label for="culture">Culture:</label><input type="number" id="culture" name="culture" value="{{ turn.culture }}" step="0.25" required></div>
         </div>
 
         <!-- Actions Table -->
@@ -193,9 +193,9 @@
                 {% set action_values = action.strip().split('\t') %}
                 <div class="row">
                     <div><label>Action:</label><input type="text" name="actions_action[]" value="{{ action_values[0] }}"></div>
-                    <div><label>AP Cost:</label><input type="number" name="actions_ap_cost[]" value="{{ action_values[1] }}"></div>
-                    <div><label>Wealth Cost:</label><input type="number" name="actions_wealth_cost[]" value="{{ action_values[2] }}"></div>
-                    <div><label>Culture Cost:</label><input type="number" name="actions_culture_cost[]" value="{{ action_values[3] }}"></div>
+                    <div><label>AP Cost:</label><input type="number" name="actions_ap_cost[]" value="{{ action_values[1] }}" step="0.25"></div>
+                    <div><label>Wealth Cost:</label><input type="number" name="actions_wealth_cost[]" value="{{ action_values[2] }}" step="0.25"></div>
+                    <div><label>Culture Cost:</label><input type="number" name="actions_culture_cost[]" value="{{ action_values[3] }}" step="0.25"></div>
                     <div><label>Notes:</label><textarea name="actions_notes[]">{{ action_values[4] if action_values|length > 4 else '' }}</textarea></div>
                 </div>
             {% endfor %}
@@ -226,8 +226,8 @@
     </select>
 </div>
 
-		    <div><label>AP Bid:</label><input type="number" name="artist_bids_ap_bid[]" value="{{ bid_values[1] }}"></div>
-                    <div><label>Wealth Bid:</label><input type="number" name="artist_bids_wealth_bid[]" value="{{ bid_values[2] }}"></div>
+		    <div><label>AP Bid:</label><input type="number" name="artist_bids_ap_bid[]" value="{{ bid_values[1] }}" step="0.25"></div>
+                    <div><label>Wealth Bid:</label><input type="number" name="artist_bids_wealth_bid[]" value="{{ bid_values[2] }}" step="0.25"></div>
 <div><label>Recipient:</label>
     <select name="artist_bids_recipient[]" required>
         <option value="">Select House</option>
@@ -260,8 +260,8 @@
                 {% set income_values = income.strip().split('\t') %}
                 <div class="row">
                     <div><label>Source:</label><input type="text" name="income_source[]" value="{{ income_values[0] }}"></div>
-                    <div><label>Wealth:</label><input type="number" name="income_wealth[]" value="{{ income_values[1] }}"></div>
-                    <div><label>AP:</label><input type="number" name="income_ap[]" value="{{ income_values[2] }}"></div>
+                    <div><label>Wealth:</label><input type="number" name="income_wealth[]" value="{{ income_values[1] }}" step="0.25"></div>
+                    <div><label>AP:</label><input type="number" name="income_ap[]" value="{{ income_values[2] }}" step="0.25"></div>
                     <div><label>Notes:</label><textarea name="income_notes[]">{{ income_values[3] if income_values|length > 3 else '' }}</textarea></div>
                 </div>
             {% endfor %}
@@ -275,10 +275,10 @@
                 {% set splendor_values = splendor.strip().split('\t') %}
                 <div class="row">
                     <div><label>Source:</label><input type="text" name="splendor_sources_source[]" value="{{ splendor_values[0] }}"></div>
-                    <div><label>Dynastic:</label><input type="number" name="splendor_sources_dynastic[]" value="{{ splendor_values[1] }}"></div>
-                    <div><label>Civic:</label><input type="number" name="splendor_sources_civic[]" value="{{ splendor_values[2] }}"></div>
-                    <div><label>Client:</label><input type="number" name="splendor_sources_client[]" value="{{ splendor_values[3] }}"></div>
-                    <div><label>Tithed:</label><input type="number" name="splendor_sources_tithed[]" value="{{ splendor_values[4] }}"></div>
+                    <div><label>Dynastic:</label><input type="number" name="splendor_sources_dynastic[]" value="{{ splendor_values[1] }}" step="0.25"></div>
+                    <div><label>Civic:</label><input type="number" name="splendor_sources_civic[]" value="{{ splendor_values[2] }}" step="0.25"></div>
+                    <div><label>Client:</label><input type="number" name="splendor_sources_client[]" value="{{ splendor_values[3] }}" step="0.25"></div>
+                    <div><label>Tithed:</label><input type="number" name="splendor_sources_tithed[]" value="{{ splendor_values[4] }}" step="0.25"></div>
                     <div><label>Notes:</label><textarea name="splendor_sources_notes[]">{{ splendor_values[5] if splendor_values|length > 5 else '' }}</textarea></div>
                 </div>
             {% endfor %}
@@ -288,10 +288,10 @@
         <!-- Bonuses Table -->
         <h2>Bonuses</h2>
         <div class="row">
-            <div><label for="bonus_spl">Spl:</label><input type="number" id="bonus_spl" name="bonus_spl" value="{{ turn.bonus_spl }}"></div>
-            <div><label for="bonus_ap">AP:</label><input type="number" id="bonus_ap" name="bonus_ap" value="{{ turn.bonus_ap }}"></div>
-            <div><label for="bonus_wealth">Wealth:</label><input type="number" id="bonus_wealth" name="bonus_wealth" value="{{ turn.bonus_wealth }}"></div>
-            <div><label for="bonus_culture">Culture:</label><input type="number" id="bonus_culture" name="bonus_culture" value="{{ turn.bonus_culture }}"></div>
+            <div><label for="bonus_spl">Spl:</label><input type="number" id="bonus_spl" name="bonus_spl" value="{{ turn.bonus_spl }}" step="0.25"></div>
+            <div><label for="bonus_ap">AP:</label><input type="number" id="bonus_ap" name="bonus_ap" value="{{ turn.bonus_ap }}" step="0.25"></div>
+            <div><label for="bonus_wealth">Wealth:</label><input type="number" id="bonus_wealth" name="bonus_wealth" value="{{ turn.bonus_wealth }}" step="0.25"></div>
+            <div><label for="bonus_culture">Culture:</label><input type="number" id="bonus_culture" name="bonus_culture" value="{{ turn.bonus_culture }}" step="0.25"></div>
         </div>
 
         <!-- Lore Section -->
