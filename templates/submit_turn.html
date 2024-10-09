@@ -98,6 +98,16 @@
             background-color: #2e7d32;
         }
 
+        .remove-btn {
+            display: inline-block;
+            background-color: #d32f2f;
+            margin-left: 10px;
+        }
+
+        .remove-btn:hover {
+            background-color: #b71c1c;
+        }
+
         .submit-btn {
             display: block;
             width: 100%;
@@ -136,10 +146,11 @@
             if (section === 'actions') {
                 newRow.innerHTML = `
                     <div><label>Action:</label><input type="text" name="actions_action[]" required></div>
-                    <div><label>AP Cost:</label><input type="number" name="actions_ap_cost[]" step="0.25" required></div>
-                    <div><label>Wealth Cost:</label><input type="number" name="actions_wealth_cost[]" step="0.25" required></div>
-                    <div><label>Culture Cost:</label><input type="number" name="actions_culture_cost[]" step="0.25" required></div>
+                    <div><label>AP Cost:</label><input type="number" name="actions_ap_cost[]" step="0.25"></div>
+                    <div><label>Wealth Cost:</label><input type="number" name="actions_wealth_cost[]" step="0.25"></div>
+                    <div><label>Culture Cost:</label><input type="number" name="actions_culture_cost[]" step="0.25"></div>
                     <div><label>Notes:</label><textarea name="actions_notes[]"></textarea></div>
+                    <button type="button" class="remove-btn" onclick="removeRow(this)">Remove</button>
                 `;
             } else if (section === 'artist_bids') {
                 newRow.innerHTML = `
@@ -159,38 +170,45 @@
                             </optgroup>
                         {% endfor %}
                     </select></div>
-                    <div><label>AP Bid:</label><input type="number" name="artist_bids_ap_bid[]" step="0.25" required></div>
-                    <div><label>Wealth Bid:</label><input type="number" name="artist_bids_wealth_bid[]" step="0.25" required></div>
-<div><label>Recipient:</label>
-    <select name="artist_bids_recipient[]" required>
-        <option value="">Select House</option>
-        {% for house in houses %}
-            <option value="{{ house.house }}">{{ house.house }}</option>
-        {% endfor %}
-    </select>
-</div>
-
+                    <div><label>AP Bid:</label><input type="number" name="artist_bids_ap_bid[]" step="0.25"></div>
+                    <div><label>Wealth Bid:</label><input type="number" name="artist_bids_wealth_bid[]" step="0.25"></div>
+                    <div><label>Recipient:</label>
+                        <select name="artist_bids_recipient[]" required>
+                            <option value="">Select House</option>
+                            {% for house in houses %}
+                                <option value="{{ house.house }}">{{ house.house }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                     <div><label>Notes:</label><textarea name="artist_bids_notes[]"></textarea></div>
+                    <button type="button" class="remove-btn" onclick="removeRow(this)">Remove</button>
                 `;
             } else if (section === 'income') {
                 newRow.innerHTML = `
                     <div><label>Source:</label><input type="text" name="income_source[]" required></div>
-                    <div><label>Wealth:</label><input type="number" name="income_wealth[]" step="0.25" required></div>
-                    <div><label>AP:</label><input type="number" name="income_ap[]" step="0.25" required></div>
+                    <div><label>Wealth:</label><input type="number" name="income_wealth[]" step="0.25"></div>
+                    <div><label>AP:</label><input type="number" name="income_ap[]" step="0.25"></div>
                     <div><label>Notes:</label><textarea name="income_notes[]"></textarea></div>
+                    <button type="button" class="remove-btn" onclick="removeRow(this)">Remove</button>
                 `;
             } else if (section === 'splendor_sources') {
                 newRow.innerHTML = `
                     <div><label>Source:</label><input type="text" name="splendor_sources_source[]" required></div>
-                    <div><label>Dynastic:</label><input type="number" name="splendor_sources_dynastic[]" step="0.25" required></div>
-                    <div><label>Civic:</label><input type="number" name="splendor_sources_civic[]" step="0.25" required></div>
-                    <div><label>Client:</label><input type="number" name="splendor_sources_client[]" step="0.25" required></div>
-                    <div><label>Tithed:</label><input type="number" name="splendor_sources_tithed[]" step="0.25" required></div>
+                    <div><label>Dynastic:</label><input type="number" name="splendor_sources_dynastic[]" step="0.25"></div>
+                    <div><label>Civic:</label><input type="number" name="splendor_sources_civic[]" step="0.25"></div>
+                    <div><label>Client:</label><input type="number" name="splendor_sources_client[]" step="0.25"></div>
+                    <div><label>Tithed:</label><input type="number" name="splendor_sources_tithed[]" step="0.25"></div>
                     <div><label>Notes:</label><textarea name="splendor_sources_notes[]"></textarea></div>
+                    <button type="button" class="remove-btn" onclick="removeRow(this)">Remove</button>
                 `;
             }
 
             container.appendChild(newRow);
+        }
+
+        function removeRow(button) {
+            const row = button.parentElement;
+            row.remove();
         }
     </script>
 </head>

@@ -300,16 +300,19 @@
                 Culture: {{ turn.bonus_culture }}<img src="{{ url_for('static', filename='culture.png') }}" alt="Culture" class="icon">
                 </p>
 
-                <!-- Final Resource Totals -->
-                <div class="final-resources">
-                    <h3>Final Resources</h3>
-                    <p>
-                        <strong>Final AP:</strong> {{ turn.final_ap }}<img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon"><br>
-                        <strong>Final Wealth:</strong> {{ turn.final_wealth }}<img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon"><br>
-                        <strong>Final Culture:</strong> {{ turn.final_culture }}<img src="{{ url_for('static', filename='culture.png') }}" alt="Culture" class="icon"><br>
-                        <strong>Final Splendor:</strong> {{ turn.final_spl }}<img src="{{ url_for('static', filename='splendor.png') }}" alt="Splendor" class="icon">
-                    </p>
-                </div>
+<!-- Final Resource Totals -->
+<div class="final-resources">
+    <h3>Final Resources</h3>
+    <p>
+        <strong>Final AP:</strong> {{ turn.final_ap }}<img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon"><br>
+        <strong>Final Wealth:</strong> {{ turn.final_wealth }}<img src="{{ url_for('static', filename='wealth.png') }}" alt="Wealth" class="icon"><br>
+        <strong>Final Culture:</strong> {{ turn.final_culture }}<img src="{{ url_for('static', filename='culture.png') }}" alt="Culture" class="icon"><br>
+        <strong>Final Splendor:</strong> {{ turn.final_spl }}<img src="{{ url_for('static', filename='splendor.png') }}" alt="Splendor" class="icon"><br>
+        <!-- New section for next turn AP -->
+        <strong>Next Turn AP:</strong> {{ 24 + total_income_ap(turn.income) }}<img src="{{ url_for('static', filename='ap.png') }}" alt="AP" class="icon"><br>
+    </p>
+</div>
+
 
                 <!-- Lore Section -->
                 <h3>Lore</h3>

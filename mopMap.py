@@ -112,11 +112,11 @@ def submit_turn():
 
     if request.method == 'POST':
         house = request.form['house']
-        splendor = float(request.form['splendor'])
-        ap = float(request.form['ap'])
-        wealth = float(request.form['wealth'])
-        culture = float(request.form['culture'])
-        lore = request.form.get('lore')  # Retrieve lore from form
+        splendor = float(request.form['splendor']) if request.form['splendor'] else 0
+        ap = float(request.form['ap']) if request.form['ap'] else 0
+        wealth = float(request.form['wealth']) if request.form['wealth'] else 0
+        culture = float(request.form['culture']) if request.form['culture'] else 0
+        lore = request.form.get('lore', '')  # Retrieve lore from form, default to empty string
 
         # Collect and process the multiple rows of data for actions
         total_ap_spent = 0
@@ -129,10 +129,14 @@ def submit_turn():
                 request.form.getlist('actions_wealth_cost[]'),
                 request.form.getlist('actions_culture_cost[]'),
                 request.form.getlist('actions_notes[]')):
+            # Set any missing value to 0
+            ap_cost = float(ap_cost) if ap_cost else 0
+            wealth_cost = float(wealth_cost) if wealth_cost else 0
+            culture_cost = float(culture_cost) if culture_cost else 0
             actions.append(f"{action}\t{ap_cost}\t{wealth_cost}\t{culture_cost}\t{notes}")
-            total_ap_spent += float(ap_cost)
-            total_wealth_spent += float(wealth_cost)
-            total_culture_spent += float(culture_cost)
+            total_ap_spent += ap_cost
+            total_wealth_spent += wealth_cost
+            total_culture_spent += culture_cost
         actions_text = "\n".join(actions)
 
         # Initialize the artist_bids list
@@ -143,9 +147,12 @@ def submit_turn():
                 request.form.getlist('artist_bids_wealth_bid[]'),
                 request.form.getlist('artist_bids_recipient[]'),
                 request.form.getlist('artist_bids_notes[]')):
-            artist_bids.append(f"{target}\t{ap_bid}\t{wealth_bid}\t{recipient}\t\t{notes}")
-            total_ap_spent += float(ap_bid)
-            total_wealth_spent += float(wealth_bid)
+            # Set any missing value to 0
+            ap_bid = float(ap_bid) if ap_bid else 0
+            wealth_bid = float(wealth_bid) if wealth_bid else 0
+            artist_bids.append(f"{target}\t{ap_bid}\t{wealth_bid}\t{recipient}\t{notes}")
+            total_ap_spent += ap_bid
+            total_wealth_spent += wealth_bid
         artist_bids_text = "\n".join(artist_bids)
 
         # Process income
@@ -157,9 +164,12 @@ def submit_turn():
                 request.form.getlist('income_wealth[]'),
                 request.form.getlist('income_ap[]'),
                 request.form.getlist('income_notes[]')):
+            # Set any missing value to 0
+            income_wealth = float(income_wealth) if income_wealth else 0
+            income_ap = float(income_ap) if income_ap else 0
             income.append(f"{source}\t{income_wealth}\t{income_ap}\t{notes}")
-            total_income_wealth += float(income_wealth)
-            total_income_ap += float(income_ap)
+            total_income_wealth += income_wealth
+            total_income_ap += income_ap
         income_text = "\n".join(income)
 
         # Process splendor sources
@@ -172,8 +182,13 @@ def submit_turn():
                 request.form.getlist('splendor_sources_client[]'),
                 request.form.getlist('splendor_sources_tithed[]'),
                 request.form.getlist('splendor_sources_notes[]')):
+            # Set any missing value to 0
+            dynastic = float(dynastic) if dynastic else 0
+            civic = float(civic) if civic else 0
+            client = float(client) if client else 0
+            tithed = float(tithed) if tithed else 0
             splendor_sources.append(f"{source}\t{dynastic}\t{civic}\t{client}\t{tithed}\t{notes}")
-            total_dynastic_spl += float(dynastic)
+            total_dynastic_spl += dynastic
         splendor_sources_text = "\n".join(splendor_sources)
 
         # Safely get the bonus resources from the form, using 0 if fields are empty
@@ -182,9 +197,8 @@ def submit_turn():
         bonus_wealth = float(request.form['bonus_wealth']) if request.form['bonus_wealth'] else 0
         bonus_culture = float(request.form['bonus_culture']) if request.form['bonus_culture'] else 0
 
-
         # Final resource calculation (including bonuses)
-        final_ap = ap - total_ap_spent + total_income_ap + bonus_ap
+        final_ap = ap - total_ap_spent + bonus_ap
         final_wealth = wealth - total_wealth_spent + total_income_wealth + bonus_wealth
         final_culture = culture - total_culture_spent + bonus_culture
         final_splendor = splendor + total_dynastic_spl + bonus_spl
@@ -228,8 +242,6 @@ def submit_turn():
         artists_by_city[artist.city].append(artist)
 
     return render_template('submit_turn.html', artists_by_city=artists_by_city, houses=houses, global_turn=global_turn)
-#    return render_template('submit_turn.html', available_artists=available_artists, houses=houses, global_turn=global_turn)
-
 
 # Route for users to view released turns only (public)
 @app.route('/view_turns')
@@ -243,7 +255,21 @@ def view_turns():
         # Associate each artist with their specific turn number
         artists_by_turn[artist.turn_number][artist.name] = artist.cp
 
-    return render_template('view_turns.html', turns=turns, artists_by_turn=artists_by_turn)
+    def total_income_ap(income_text):
+        # Split the income entries and sum up the AP column (third value in each entry)
+        total_ap = 0
+        for line in income_text.split('\n'):
+            if line:
+                values = line.split('\t')
+                if len(values) > 2:  # Ensure there are enough columns
+                    try:
+                        total_ap += float(values[2])  # Assuming AP is the 3rd column
+                    except ValueError:
+                        continue  # In case of malformed data
+        return total_ap
+
+
+    return render_template('view_turns.html', turns=turns, artists_by_turn=artists_by_turn, total_income_ap=total_income_ap)
 
 
 # Admin login
@@ -279,11 +305,26 @@ def admin_dashboard():
         # Store the artist name and CP in the dictionary for the specific turn_number
         artists_by_turn[turn.turn_number] = {artist.name: artist.cp for artist in artists}
 
+    def total_income_ap(income_text):
+        # Split the income entries and sum up the AP column (third value in each entry)
+        total_ap = 0
+        for line in income_text.split('\n'):
+            if line:
+                values = line.split('\t')
+                if len(values) > 2:  # Ensure there are enough columns
+                    try:
+                        total_ap += float(values[2])  # Assuming AP is the 3rd column
+                    except ValueError:
+                        continue  # In case of malformed data
+        return total_ap
+
+
     return render_template(
         'admin_dashboard.html', 
         turns=turns, 
         global_turn=global_turn, 
-        artists_by_turn=artists_by_turn
+        artists_by_turn=artists_by_turn,
+        total_income_ap=total_income_ap
     )
 
 
@@ -305,8 +346,6 @@ def artist_auction():
 
     return render_template('artist_auction.html', artists_by_city=artists_by_city, global_turn=global_turn)
 
-
-# Route to release a turn (only for admin)
 @app.route('/admin/release_turn/<int:turn_id>', methods=['POST'])
 def release_turn(turn_id):
     if not session.get('admin'):
@@ -315,21 +354,41 @@ def release_turn(turn_id):
     turn = Turn.query.get(turn_id)
     if turn and turn.status == 'submitted':
         turn.status = 'released'
-        
+
         # Lock the turn_number to the current global turn
         global_turn = GlobalTurn.query.first().turn_number
         turn.turn_number = global_turn  # Lock turn_number at the moment of release
+
+        # Helper function to calculate total income AP
+        def calculate_total_income_ap(income_text):
+            total_income_ap = 0
+            for line in income_text.split('\n'):
+                if line:
+                    values = line.split('\t')
+                    if len(values) > 2:
+                        try:
+                            total_income_ap += float(values[2])  # Assuming AP is the 3rd column
+                        except ValueError:
+                            continue  # In case of malformed data
+            return total_income_ap
+
+        # Calculate total income AP
+        total_income_ap = calculate_total_income_ap(turn.income)
+
+        # Update the next turn AP: default 24 + bonus_ap + total income_ap
+        next_turn_ap = 24 + total_income_ap  # Carry over to next turn
 
         # Update the GlobalResource for this house
         resource = GlobalResource.query.filter_by(house=turn.house).first()
         if resource:
             resource.splendor = turn.final_spl
-            resource.ap = turn.final_ap
-            resource.wealth = turn.final_wealth
+            resource.ap = next_turn_ap  # Set next turn AP to the carried-over value
+            resource.wealth = turn.final_wealth+turn.final_ap
             resource.culture = turn.final_culture
             db.session.commit()
 
     return redirect(url_for('admin_dashboard'))
+
 
 # Route to logout the admin
 @app.route('/admin/logout')
@@ -411,8 +470,6 @@ class Artist(db.Model):
     special_ability = db.Column(db.String(255), nullable=True)
     turn_number = db.Column(db.Integer, nullable=False)  # Add this line
 
-
-
 # Route to edit a specific turn (only for admin)
 @app.route('/admin/edit_turn/<int:turn_id>', methods=['GET', 'POST'])
 def edit_turn(turn_id):
@@ -433,15 +490,15 @@ def edit_turn(turn_id):
         turn.bonus_ap = float(request.form['bonus_ap']) if request.form['bonus_ap'] else 0
         turn.bonus_wealth = float(request.form['bonus_wealth']) if request.form['bonus_wealth'] else 0
         turn.bonus_culture = float(request.form['bonus_culture']) if request.form['bonus_culture'] else 0
-        turn.lore = request.form['lore']  # Add lore to be updated
+        turn.lore = request.form.get('lore', '')  # Add lore to be updated
 
         # Rebuild actions, artist bids, income, and splendor sources
         actions = []
         for i in range(len(request.form.getlist('actions_action[]'))):
             action = request.form.getlist('actions_action[]')[i]
-            ap_cost = request.form.getlist('actions_ap_cost[]')[i]
-            wealth_cost = request.form.getlist('actions_wealth_cost[]')[i]
-            culture_cost = request.form.getlist('actions_culture_cost[]')[i]
+            ap_cost = request.form.getlist('actions_ap_cost[]')[i] or 0
+            wealth_cost = request.form.getlist('actions_wealth_cost[]')[i] or 0
+            culture_cost = request.form.getlist('actions_culture_cost[]')[i] or 0
             notes = request.form.getlist('actions_notes[]')[i]
             actions.append(f"{action}\t{ap_cost}\t{wealth_cost}\t{culture_cost}\t{notes}")
         turn.actions = '\n'.join(actions)
@@ -449,8 +506,8 @@ def edit_turn(turn_id):
         artist_bids = []
         for i in range(len(request.form.getlist('artist_bids_target[]'))):
             target = request.form.getlist('artist_bids_target[]')[i]
-            ap_bid = request.form.getlist('artist_bids_ap_bid[]')[i]
-            wealth_bid = request.form.getlist('artist_bids_wealth_bid[]')[i]
+            ap_bid = request.form.getlist('artist_bids_ap_bid[]')[i] or 0
+            wealth_bid = request.form.getlist('artist_bids_wealth_bid[]')[i] or 0
             recipient = request.form.getlist('artist_bids_recipient[]')[i]
             outcome = request.form.getlist('artist_bids_outcome[]')[i]
             notes = request.form.getlist('artist_bids_notes[]')[i]
@@ -460,8 +517,8 @@ def edit_turn(turn_id):
         income = []
         for i in range(len(request.form.getlist('income_source[]'))):
             source = request.form.getlist('income_source[]')[i]
-            wealth = request.form.getlist('income_wealth[]')[i]
-            ap = request.form.getlist('income_ap[]')[i]
+            wealth = request.form.getlist('income_wealth[]')[i] or 0
+            ap = request.form.getlist('income_ap[]')[i] or 0
             notes = request.form.getlist('income_notes[]')[i]
             income.append(f"{source}\t{wealth}\t{ap}\t{notes}")
         turn.income = '\n'.join(income)
@@ -469,10 +526,10 @@ def edit_turn(turn_id):
         splendor_sources = []
         for i in range(len(request.form.getlist('splendor_sources_source[]'))):
             source = request.form.getlist('splendor_sources_source[]')[i]
-            dynastic = request.form.getlist('splendor_sources_dynastic[]')[i]
-            civic = request.form.getlist('splendor_sources_civic[]')[i]
-            client = request.form.getlist('splendor_sources_client[]')[i]
-            tithed = request.form.getlist('splendor_sources_tithed[]')[i]
+            dynastic = request.form.getlist('splendor_sources_dynastic[]')[i] or 0
+            civic = request.form.getlist('splendor_sources_civic[]')[i] or 0
+            client = request.form.getlist('splendor_sources_client[]')[i] or 0
+            tithed = request.form.getlist('splendor_sources_tithed[]')[i] or 0
             notes = request.form.getlist('splendor_sources_notes[]')[i]
             splendor_sources.append(f"{source}\t{dynastic}\t{civic}\t{client}\t{tithed}\t{notes}")
         turn.splendor_sources = '\n'.join(splendor_sources)
@@ -496,7 +553,7 @@ def edit_turn(turn_id):
 
         total_dynastic_splendor = sum(safe_float(line.split('\t')[1]) for line in turn.splendor_sources.split('\n') if line and len(line.split('\t')) > 1)
 
-        turn.final_ap = turn.ap - total_ap_spent - total_ap_bid + total_ap_income + turn.bonus_ap
+        turn.final_ap = turn.ap - total_ap_spent - total_ap_bid + turn.bonus_ap
         turn.final_wealth = turn.wealth - total_wealth_spent - total_wealth_bid + total_wealth_income + turn.bonus_wealth
         turn.final_culture = turn.culture - total_culture_spent + turn.bonus_culture
         turn.final_spl = turn.splendor + total_dynastic_splendor + turn.bonus_spl
@@ -504,14 +561,14 @@ def edit_turn(turn_id):
         # Save the changes
         db.session.commit()
         return redirect(url_for('admin_dashboard'))
+
     artists_by_city = defaultdict(list)
     available_artists = Artist.query.all()
 
     for artist in available_artists:
         artists_by_city[artist.city].append(artist)
 
-
-    return render_template('edit_turn.html', artists_by_city=artists_by_city, turn=turn,houses=houses)
+    return render_template('edit_turn.html', artists_by_city=artists_by_city, turn=turn, houses=houses)
 
 
 @app.route('/view_house_turns/<house>')
@@ -531,6 +588,19 @@ def view_house_turns(house):
     # Group artists by turn number and their name
     for artist in artists:
         artists_by_turn[artist.turn_number][artist.name] = artist.cp
+
+    def total_income_ap(income_text):
+        # Split the income entries and sum up the AP column (third value in each entry)
+        total_ap = 0
+        for line in income_text.split('\n'):
+            if line:
+                values = line.split('\t')
+                if len(values) > 2:  # Ensure there are enough columns
+                    try:
+                        total_ap += float(values[2])  # Assuming AP is the 3rd column
+                    except ValueError:
+                        continue  # In case of malformed data
+        return total_ap
 
     # Render the house-specific turns using a custom HTML template
     return render_template('view_house_turns.html', turns=turns, house=house, artists_by_turn=artists_by_turn)

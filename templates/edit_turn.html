@@ -52,8 +52,8 @@
 
         textarea {
             min-height: 100px;
-            resize: none; /* Prevent manual resizing */
-            overflow: hidden; /* Prevent scroll bars */
+            resize: none;
+            overflow: hidden;
         }
 
         button {
@@ -87,6 +87,20 @@
             margin-right: 0;
         }
 
+        .remove-btn {
+            background-color: #e53935;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 16px;
+        }
+
+        .remove-btn:hover {
+            background-color: #d32f2f;
+        }
+
         .add-btn {
             display: inline-block;
             margin-bottom: 20px;
@@ -114,7 +128,9 @@
             margin: 30px 0;
         }
     </style>
+
     <script>
+        // Function to automatically resize textareas
         function autoResize(textarea) {
             textarea.style.height = 'auto';
             textarea.style.height = textarea.scrollHeight + 'px';
@@ -126,6 +142,7 @@
             }
         });
 
+        // Function to add a new row
         function addRow(section) {
             const container = document.getElementById(section);
             const newRow = document.createElement("div");
@@ -134,39 +151,49 @@
             if (section === 'actions') {
                 newRow.innerHTML = `
                     <div><label>Action:</label><input type="text" name="actions_action[]" required></div>
-                    <div><label>AP Cost:</label><input type="number" name="actions_ap_cost[]" step="0.25" required></div>
-                    <div><label>Wealth Cost:</label><input type="number" name="actions_wealth_cost[]" step="0.25" required></div>
-                    <div><label>Culture Cost:</label><input type="number" name="actions_culture_cost[]" step="0.25" required></div>
+                    <div><label>AP Cost:</label><input type="number" name="actions_ap_cost[]" step="0.25"></div>
+                    <div><label>Wealth Cost:</label><input type="number" name="actions_wealth_cost[]" step="0.25"></div>
+                    <div><label>Culture Cost:</label><input type="number" name="actions_culture_cost[]" step="0.25"></div>
                     <div><label>Notes:</label><textarea name="actions_notes[]"></textarea></div>
+                    <button type="button" class="remove-btn" onclick="removeRow(this)">Remove</button>
                 `;
             } else if (section === 'artist_bids') {
                 newRow.innerHTML = `
                     <div><label>Bid Target:</label><input type="text" name="artist_bids_target[]" required></div>
-                    <div><label>AP Bid:</label><input type="number" name="artist_bids_ap_bid[]" step="0.25" required></div>
-                    <div><label>Wealth Bid:</label><input type="number" name="artist_bids_wealth_bid[]" step="0.25" required></div>
+                    <div><label>AP Bid:</label><input type="number" name="artist_bids_ap_bid[]" step="0.25"></div>
+                    <div><label>Wealth Bid:</label><input type="number" name="artist_bids_wealth_bid[]" step="0.25"></div>
                     <div><label>Recipient:</label><input type="text" name="artist_bids_recipient[]"></div>
                     <div><label>Outcome:</label><input type="text" name="artist_bids_outcome[]"></div>
                     <div><label>Notes:</label><textarea name="artist_bids_notes[]"></textarea></div>
+                    <button type="button" class="remove-btn" onclick="removeRow(this)">Remove</button>
                 `;
             } else if (section === 'income') {
                 newRow.innerHTML = `
                     <div><label>Source:</label><input type="text" name="income_source[]" required></div>
-                    <div><label>Wealth:</label><input type="number" name="income_wealth[]" step="0.25" required></div>
-                    <div><label>AP:</label><input type="number" name="income_ap[]" step="0.25" required></div>
+                    <div><label>Wealth:</label><input type="number" name="income_wealth[]" step="0.25"></div>
+                    <div><label>AP:</label><input type="number" name="income_ap[]" step="0.25"></div>
                     <div><label>Notes:</label><textarea name="income_notes[]"></textarea></div>
+                    <button type="button" class="remove-btn" onclick="removeRow(this)">Remove</button>
                 `;
             } else if (section === 'splendor_sources') {
                 newRow.innerHTML = `
                     <div><label>Source:</label><input type="text" name="splendor_sources_source[]" required></div>
-                    <div><label>Dynastic:</label><input type="number" name="splendor_sources_dynastic[]" step="0.25" required></div>
-                    <div><label>Civic:</label><input type="number" name="splendor_sources_civic[]" step="0.25" required></div>
-                    <div><label>Client:</label><input type="number" name="splendor_sources_client[]" step="0.25" required></div>
-                    <div><label>Tithed:</label><input type="number" name="splendor_sources_tithed[]" step="0.25" required></div>
+                    <div><label>Dynastic:</label><input type="number" name="splendor_sources_dynastic[]" step="0.25"></div>
+                    <div><label>Civic:</label><input type="number" name="splendor_sources_civic[]" step="0.25"></div>
+                    <div><label>Client:</label><input type="number" name="splendor_sources_client[]" step="0.25"></div>
+                    <div><label>Tithed:</label><input type="number" name="splendor_sources_tithed[]" step="0.25"></div>
                     <div><label>Notes:</label><textarea name="splendor_sources_notes[]"></textarea></div>
+                    <button type="button" class="remove-btn" onclick="removeRow(this)">Remove</button>
                 `;
             }
 
             container.appendChild(newRow);
+        }
+
+        // Function to remove a row
+        function removeRow(button) {
+            const row = button.parentElement;
+            row.remove();
         }
     </script>
 </head>
@@ -197,6 +224,7 @@
                     <div><label>Wealth Cost:</label><input type="number" name="actions_wealth_cost[]" value="{{ action_values[2] }}" step="0.25"></div>
                     <div><label>Culture Cost:</label><input type="number" name="actions_culture_cost[]" value="{{ action_values[3] }}" step="0.25"></div>
                     <div><label>Notes:</label><textarea name="actions_notes[]">{{ action_values[4] if action_values|length > 4 else '' }}</textarea></div>
+                    <button type="button" class="remove-btn" onclick="removeRow(this)">Remove</button>
                 </div>
             {% endfor %}
         </div>
@@ -208,46 +236,13 @@
             {% for bid in turn.artist_bids.split('\n') %}
                 {% set bid_values = bid.strip().split('\t') %}
                 <div class="row">
-<div><label>Bid Target:</label>
-    <select name="artist_bids_target[]" required>
-        <option value="">Select Artist</option>
-        {% for city, artists in artists_by_city.items() %}
-            <optgroup label="{{ city }}">
-                {% for artist in artists %}
-                    <option value="{{ artist.name }}" {% if bid_values[0] == artist.name %}selected{% endif %}>
-                        {{ artist.name }} ({{ artist.cp }} CP)
-                        {% if artist.special_ability %}
-                            - {{ artist.special_ability }}
-                        {% endif %}
-                    </option>
-                {% endfor %}
-            </optgroup>
-        {% endfor %}
-    </select>
-</div>
-
-		    <div><label>AP Bid:</label><input type="number" name="artist_bids_ap_bid[]" value="{{ bid_values[1] }}" step="0.25"></div>
+                    <div><label>Bid Target:</label><input type="text" name="artist_bids_target[]" value="{{ bid_values[0] }}" required></div>
+                    <div><label>AP Bid:</label><input type="number" name="artist_bids_ap_bid[]" value="{{ bid_values[1] }}" step="0.25"></div>
                     <div><label>Wealth Bid:</label><input type="number" name="artist_bids_wealth_bid[]" value="{{ bid_values[2] }}" step="0.25"></div>
-<div><label>Recipient:</label>
-    <select name="artist_bids_recipient[]" required>
-        <option value="">Select House</option>
-        {% for house in houses %}
-            <option value="{{ house.house }}" 
-                {% if bid_values|length > 3 and bid_values[3] == house.house %}selected{% endif %}>
-                {{ house.house }}
-            </option>
-        {% endfor %}
-    </select>
-</div>
-<div><label>Outcome:</label>
-    <select name="artist_bids_outcome[]">
-        <option value="" {% if bid_values[4] == '' %}selected{% endif %}></option>
-        <option value="Won" {% if bid_values[4] == 'Won' %}selected{% endif %}>Won</option>
-        <option value="Outbid" {% if bid_values[4] == 'Outbid' %}selected{% endif %}>Outbid</option>
-    </select>
-</div>
-
+                    <div><label>Recipient:</label><input type="text" name="artist_bids_recipient[]" value="{{ bid_values[3] }}"></div>
+                    <div><label>Outcome:</label><input type="text" name="artist_bids_outcome[]" value="{{ bid_values[4] }}"></div>
                     <div><label>Notes:</label><textarea name="artist_bids_notes[]">{{ bid_values[5] if bid_values|length > 5 else '' }}</textarea></div>
+                    <button type="button" class="remove-btn" onclick="removeRow(this)">Remove</button>
                 </div>
             {% endfor %}
         </div>
@@ -263,6 +258,7 @@
                     <div><label>Wealth:</label><input type="number" name="income_wealth[]" value="{{ income_values[1] }}" step="0.25"></div>
                     <div><label>AP:</label><input type="number" name="income_ap[]" value="{{ income_values[2] }}" step="0.25"></div>
                     <div><label>Notes:</label><textarea name="income_notes[]">{{ income_values[3] if income_values|length > 3 else '' }}</textarea></div>
+                    <button type="button" class="remove-btn" onclick="removeRow(this)">Remove</button>
                 </div>
             {% endfor %}
         </div>
@@ -280,6 +276,7 @@
                     <div><label>Client:</label><input type="number" name="splendor_sources_client[]" value="{{ splendor_values[3] }}" step="0.25"></div>
                     <div><label>Tithed:</label><input type="number" name="splendor_sources_tithed[]" value="{{ splendor_values[4] }}" step="0.25"></div>
                     <div><label>Notes:</label><textarea name="splendor_sources_notes[]">{{ splendor_values[5] if splendor_values|length > 5 else '' }}</textarea></div>
+                    <button type="button" class="remove-btn" onclick="removeRow(this)">Remove</button>
                 </div>
             {% endfor %}
         </div>
